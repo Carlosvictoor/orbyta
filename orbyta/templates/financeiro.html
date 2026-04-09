@@ -133,7 +133,7 @@
 
         <div class="two-col">
           <input class="input" name="valor" placeholder="Valor (ex: 35,00)" required />
-          <input class="input" type="date" name="data" required />
+          <input class="input" type="date" name="data" value="{{ data_hoje }}" required />
         </div>
 
         <button class="btn primary" style="width:100%; margin-top:10px;" type="submit">
@@ -141,6 +141,10 @@
         </button>
 
         <div class="small-muted" style="margin-top:8px;">
+          Depois de salvar, o lançamento aparece logo abaixo no histórico deste mês.
+        </div>
+
+        <div class="small-muted" style="margin-top:6px;">
           Entradas automáticas são geradas a partir dos agendamentos. Se o cliente for cancelado, ele não entra no financeiro.
         </div>
       </form>

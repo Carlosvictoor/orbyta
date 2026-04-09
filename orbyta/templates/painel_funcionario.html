@@ -29,6 +29,44 @@
     {% endif %}
   {% endwith %}
 
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-head">
+      <h2>Meu perfil</h2>
+      <span class="small-muted">Atualize sua foto e apresentação</span>
+    </div>
+
+    <div class="two-col" style="align-items:start; margin-top:0;">
+      <div>
+        {% if profissional.foto %}
+          <img
+            src="{{ profissional.foto }}"
+            alt="{{ profissional.nome }}"
+            style="width:140px; height:140px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,.08);"
+          >
+        {% else %}
+          <div style="width:140px; height:140px; border-radius:16px; background:#1d1d1d; display:flex; align-items:center; justify-content:center; font-size:42px; font-weight:800; border:1px solid rgba(255,255,255,.08);">
+            {{ profissional.nome[:1] }}
+          </div>
+        {% endif %}
+
+        <p class="small-muted" style="margin-top:10px;">{{ profissional.descricao or 'Adicione uma foto para aparecer melhor para seus clientes.' }}</p>
+      </div>
+
+      <form method="post" action="/painel-funcionario/perfil?mes={{ mes }}" enctype="multipart/form-data">
+        <input class="input" name="foto_url" placeholder="Link da sua foto (opcional)" value="{{ profissional.foto or '' }}">
+        <input class="input" type="file" name="foto_arquivo" accept=".png,.jpg,.jpeg,.webp,.gif" style="margin-top:10px;">
+        <textarea class="input" name="descricao" rows="4" style="margin-top:10px; resize:vertical;" placeholder="Fale um pouco sobre você">{{ profissional.descricao or '' }}</textarea>
+
+        <label class="small-muted" style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+          <input type="checkbox" name="remover_foto" value="1" style="width:auto; margin:0;">
+          Remover foto atual
+        </label>
+
+        <button class="btn primary" type="submit" style="margin-top:12px; width:100%;">Salvar meu perfil</button>
+      </form>
+    </div>
+  </div>
+
   <div class="panel">
     <div class="panel-head">
       <h2>Mês</h2>
@@ -110,7 +148,12 @@
             <tr>
               <td>{{ a.data }}</td>
               <td>{{ a.horario }}</td>
-              <td>{{ a.cliente }}</td>
+              <td>
+                <strong>{{ a.cliente }}</strong>
+                {% if a.whatsapp_link %}
+                  <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
+                {% endif %}
+              </td>
               <td>{{ a.servico }}</td>
               <td>R$ {{ a.valor }}</td>
               <td><strong>R$ {{ a.valor_profissional }}</strong></td>

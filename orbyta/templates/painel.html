@@ -17,6 +17,7 @@
     </div>
 
     <div class="dash-actions">
+      <a class="link-btn" href="/loja/{{ negocio.id }}" target="_blank" rel="noopener noreferrer">Minha loja</a>
       <a class="link-btn" href="/painel/servicos">Serviços</a>
       <a class="link-btn" href="/painel/financeiro">Financeiro</a>
       <a class="link-btn" href="/painel/profissionais">Profissionais</a>
@@ -32,6 +33,56 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>✨ Personalizar página da loja</h2>
+      <a class="link-btn" href="/loja/{{ negocio.id }}" target="_blank" rel="noopener noreferrer">Ver página pública</a>
+    </div>
+
+    <div class="two-col" style="align-items:start;">
+      <div>
+        {% if negocio.get('foto') %}
+          <img
+            src="{{ negocio.get('foto') }}"
+            alt="Foto do estabelecimento"
+            style="width:100%; max-width:360px; height:220px; object-fit:cover; border-radius:16px; border:1px solid rgba(255,255,255,.08);"
+          >
+        {% else %}
+          <div style="width:100%; max-width:360px; height:220px; border-radius:16px; background:linear-gradient(135deg,#111,#1d1d1d); display:flex; align-items:center; justify-content:center; font-size:22px; font-weight:800; border:1px solid rgba(255,255,255,.08);">
+            {{ negocio.nome }}
+          </div>
+        {% endif %}
+
+        <p class="small-muted" style="margin-top:10px;">
+          {% if negocio.get('descricao_curta') %}
+            {{ negocio.get('descricao_curta') }}
+          {% else %}
+            Adicione uma foto e uma descrição curta para deixar sua página com a cara da sua loja.
+          {% endif %}
+        </p>
+      </div>
+
+      <form method="post" action="/painel/personalizar" enctype="multipart/form-data">
+        <input class="input" name="foto_url" placeholder="Link da foto do estabelecimento (opcional)" value="{{ negocio.get('foto', '') }}">
+        <input class="input" type="file" name="foto_arquivo" accept=".png,.jpg,.jpeg,.webp,.gif" style="margin-top:10px;">
+        <textarea name="descricao_curta" class="input" rows="4" style="margin-top:10px; resize:vertical;">{{ negocio.get('descricao_curta', '') }}</textarea>
+        <input class="input" name="instagram" placeholder="Link do Instagram (opcional)" value="{{ negocio.get('instagram', '') }}" style="margin-top:10px;">
+
+        <label class="small-muted" style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+          <input type="checkbox" name="remover_foto" value="1" style="width:auto; margin:0;">
+          Remover foto atual
+        </label>
+
+        <div class="biz-actions" style="margin-top:12px;">
+          <button type="submit">Salvar visual da loja</button>
+          {% if negocio.get('whatsapp_link') %}
+            <a class="link-btn" href="{{ negocio.get('whatsapp_link') }}" target="_blank" rel="noopener noreferrer">Abrir WhatsApp</a>
+          {% endif %}
+        </div>
+      </form>
+    </div>
+  </div>
 
   <div class="kpis">
     <div class="kpi">
@@ -99,7 +150,11 @@
         <ul class="list">
           {% for p in proximos %}
             <li>
-              <strong>{{ p.horario }}</strong> • {{ p.nome }}<br>
+              <strong>{{ p.horario }}</strong> • {{ p.nome }}
+              {% if p.whatsapp_link %}
+                <a href="{{ p.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
+              {% endif %}
+              <br>
               <span class="small-muted">{{ p.servico }} • {{ p.barbeiro }}</span>
             </li>
           {% endfor %}
@@ -222,7 +277,12 @@
             {% set ag_id = a.get('id') or (a.get('data','') ~ '|' ~ a.get('horario','') ~ '|' ~ a.get('nome','') ~ '|' ~ a.get('barbeiro','')) %}
             <td>{{ a.data }}</td>
             <td><span class="badge">{{ a.horario }}</span></td>
-            <td>{{ a.nome }}</td>
+            <td>
+              <strong>{{ a.nome }}</strong>
+              {% if a.whatsapp_link %}
+                <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
+              {% endif %}
+            </td>
             <td>{{ a.telefone or '—' }}</td>
             <td>{{ a.servico or "—" }}</td>
             <td>{{ a.barbeiro or "—" }}</td>

@@ -32,9 +32,10 @@
 
     <form method="post" action="/cadastro">
       <input name="email" type="email" placeholder="Seu email" required autocomplete="email">
+      <input name="telefone" type="tel" placeholder="Seu telefone / WhatsApp com DDD (opcional)" autocomplete="tel">
       <input name="senha" type="password" placeholder="Crie uma senha com pelo menos 6 caracteres" required minlength="6" autocomplete="new-password">
       <button type="submit">Criar minha conta</button>
-      <p class="form-hint">Dica: use uma senha fácil de lembrar e segura para você.</p>
+      <p class="form-hint">Você pode deixar o telefone salvo para facilitar o agendamento e o contato no WhatsApp.</p>
     </form>
 
     <div class="auth-footer" style="text-align:center; margin-top:14px;">

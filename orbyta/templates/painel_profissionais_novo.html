@@ -21,7 +21,7 @@
       {% endif %}
     {% endwith %}
 
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
       <input
         name="nome"
         type="text"
@@ -58,6 +58,33 @@
       <div style="width:90%; margin:8px auto 0; font-size:13px; opacity:.75; text-align:left;">
         Exemplo: 60 = profissional recebe 60% de cada atendimento.
       </div>
+
+      <label style="display:block; text-align:left; width:90%; margin:14px auto 6px; opacity:.9;">
+        Foto do profissional
+      </label>
+
+      <input
+        name="foto_url"
+        type="url"
+        placeholder="Cole o link da foto (opcional)"
+      >
+
+      <input
+        name="foto_arquivo"
+        type="file"
+        accept=".png,.jpg,.jpeg,.webp,.gif"
+        style="width:90%; margin:10px auto 0; display:block;"
+      >
+
+      <label style="display:block; text-align:left; width:90%; margin:14px auto 6px; opacity:.9;">
+        Descrição rápida
+      </label>
+
+      <textarea
+        name="descricao"
+        placeholder="Ex: especialista em corte, barba, sobrancelha..."
+        style="width:90%; min-height:100px; resize:vertical;"
+      ></textarea>
 
       <button type="submit">Salvar profissional</button>
     </form>

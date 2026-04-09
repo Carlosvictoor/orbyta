@@ -1,4 +1,10 @@
+import os
+import uuid
 from datetime import datetime
+
+from werkzeug.utils import secure_filename
+
+ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
 
 
 def parse_money_br(v):
@@ -49,6 +55,28 @@ def gerar_slots_padrao_30():
             break
 
     return slots
+
+
+def salvar_imagem_upload(upload, static_dir: str, prefix: str = "img"):
+    if not upload or not getattr(upload, "filename", ""):
+        return None, None
+
+    filename = secure_filename(upload.filename or "")
+    if not filename or "." not in filename:
+        return None, "Escolha uma imagem válida (PNG, JPG, WEBP ou GIF)."
+
+    ext = filename.rsplit(".", 1)[-1].lower()
+    if ext not in ALLOWED_IMAGE_EXTENSIONS:
+        return None, "Formato não permitido. Use PNG, JPG, WEBP ou GIF."
+
+    upload_dir = os.path.join(static_dir, "uploads")
+    os.makedirs(upload_dir, exist_ok=True)
+
+    nome_final = f"{prefix}-{uuid.uuid4().hex[:12]}.{ext}"
+    destino = os.path.join(upload_dir, nome_final)
+    upload.save(destino)
+
+    return f"/static/uploads/{nome_final}", None
 
 
 SLOTS_PADRAO_30 = gerar_slots_padrao_30()

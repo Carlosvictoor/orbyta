@@ -36,6 +36,9 @@
   <div class="grid">
     {% for n in lista %}
       <div class="biz-card">
+        {% if n.foto %}
+          <img src="{{ n.foto }}" alt="{{ n.nome }}" style="width:100%; height:180px; object-fit:cover; border-radius:14px; margin-bottom:12px; border:1px solid rgba(255,255,255,.08);">
+        {% endif %}
         <h3>{{ n.nome }}</h3>
         <p class="muted">{{ n.bairro }} • {{ n.cidade }}</p>
 
@@ -45,6 +48,9 @@
         </div>
 
         <p style="opacity:.88;">{{ n.endereco }}</p>
+        {% if n.descricao_curta %}
+          <p class="small-muted">{{ n.descricao_curta }}</p>
+        {% endif %}
 
         <div class="biz-actions">
           <a class="btn outline" href="https://wa.me/55{{ n.whatsapp }}" target="_blank">WhatsApp</a>

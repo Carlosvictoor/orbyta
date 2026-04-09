@@ -40,116 +40,46 @@
   <div class="grid">
     {% for p in profs %}
       <div class="biz-card">
-        <h3 style="margin:0 0 8px;">{{ p.nome }}</h3>
-        <p style="opacity:.85; margin:0 0 14px;">{{ p.categoria }}</p>
-
-        {% if p.login_funcionario %}
-          <div class="panel" style="padding:14px; margin-bottom:12px;">
-            <div class="panel-head" style="margin-bottom:8px;">
-              <h2 style="font-size:16px;">Acesso criado</h2>
+        <div style="display:flex; gap:12px; align-items:center; margin-bottom:12px;">
+          {% if p.foto %}
+            <img src="{{ p.foto }}" alt="{{ p.nome }}" style="width:74px; height:74px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,.08);">
+          {% else %}
+            <div style="width:74px; height:74px; border-radius:14px; background:#1b1b1b; display:flex; align-items:center; justify-content:center; font-size:28px; font-weight:800; border:1px solid rgba(255,255,255,.08);">
+              {{ p.nome[:1] }}
             </div>
+          {% endif %}
 
-            <div class="small-muted" style="margin-bottom:10px;">
-              Login vinculado: <strong>{{ p.login_funcionario }}</strong>
-            </div>
-
-            <a class="btn outline" href="/painel/profissionais/excluir-acesso/{{ p.id }}">
-              Remover acesso
-            </a>
+          <div>
+            <h3 style="margin:0 0 4px;">{{ p.nome }}</h3>
+            <p style="opacity:.85; margin:0 0 4px;">{{ p.categoria }}</p>
+            <p class="small-muted" style="margin:0;">
+              Comissão: <strong>{{ p.comissao_pct or 50 }}%</strong>
+            </p>
           </div>
-        {% else %}
-          <div class="panel" style="padding:14px; margin-bottom:12px;">
-            <div class="panel-head" style="margin-bottom:8px;">
-              <h2 style="font-size:16px;">Criar acesso do funcionário</h2>
-            </div>
-
-            <form method="post" action="/painel/profissionais/criar-acesso/{{ p.id }}">
-              <div style="margin-bottom:10px;">
-                <input
-                  class="input"
-                  type="email"
-                  name="email"
-                  placeholder="Email do funcionário"
-                  required
-                >
-              </div>
-
-              <div style="margin-bottom:10px;">
-                <input
-                  class="input"
-                  type="text"
-                  name="senha"
-                  placeholder="Senha do funcionário"
-                  required
-                >
-              </div>
-
-              <button class="btn primary" type="submit" style="width:100%;">
-                Criar acesso
-              </button>
-            </form>
-          </div>
-        {% endif %}
-
-        <div class="biz-actions">
-          <a class="btn outline" href="/painel/profissionais/excluir/{{ p.id }}">
-            Excluir profissional
-          </a>
         </div>
-      </div>
-    {% endfor %}
-  </div>
 
-</div>
+        <p class="small-muted" style="margin-top:0;">{{ p.descricao or 'Sem descrição cadastrada ainda.' }}</p>
 
-</body>
-</html><!DOCTYPE html>
-<html lang="pt-br">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profissionais • {{ negocio.nome }}</title>
-  <link rel="stylesheet" href="/static/style.css">
-</head>
-<body>
+        <div class="panel" style="padding:14px; margin-bottom:12px;">
+          <div class="panel-head" style="margin-bottom:8px;">
+            <h2 style="font-size:16px;">Foto e descrição</h2>
+          </div>
 
-<div class="dash">
+          <form method="post" action="/painel/profissionais/perfil/{{ p.id }}" enctype="multipart/form-data">
+            <input class="input" type="url" name="foto_url" placeholder="Link da foto (opcional)" value="{{ p.foto or '' }}">
+            <input class="input" type="file" name="foto_arquivo" accept=".png,.jpg,.jpeg,.webp,.gif" style="margin-top:10px;">
+            <textarea class="input" name="descricao" rows="4" style="margin-top:10px; resize:vertical;" placeholder="Apresentação do profissional">{{ p.descricao or '' }}</textarea>
 
-  <div class="dash-top">
-    <div class="dash-title">
-      <h1>Profissionais</h1>
-      <p>{{ negocio.nome }}</p>
-    </div>
+            <label class="small-muted" style="display:flex; gap:8px; align-items:center; margin-top:10px;">
+              <input type="checkbox" name="remover_foto" value="1" style="width:auto; margin:0;">
+              Remover foto atual
+            </label>
 
-    <div class="dash-actions">
-      <a class="link-btn" href="/painel/profissionais/novo">+ Novo profissional</a>
-      <a class="link-btn" href="/painel">Voltar ao painel</a>
-      <a class="link-btn" href="/logout">Sair</a>
-    </div>
-  </div>
-
-  {% with messages = get_flashed_messages() %}
-    {% if messages %}
-      {% for msg in messages %}
-        <div class="flash">{{ msg }}</div>
-      {% endfor %}
-    {% endif %}
-  {% endwith %}
-
-  {% if profs|length == 0 %}
-    <div class="panel">
-      <div class="small-muted">Nenhum profissional cadastrado ainda.</div>
-    </div>
-  {% endif %}
-
-  <div class="grid">
-    {% for p in profs %}
-      <div class="biz-card">
-        <h3 style="margin:0 0 8px;">{{ p.nome }}</h3>
-        <p style="opacity:.85; margin:0 0 8px;">{{ p.categoria }}</p>
-        <p style="opacity:.85; margin:0 0 14px;">
-          <strong>Comissão:</strong> {{ p.comissao_pct or 50 }}%
-        </p>
+            <button class="btn primary" type="submit" style="width:100%; margin-top:10px;">
+              Salvar perfil
+            </button>
+          </form>
+        </div>
 
         <div class="panel" style="padding:14px; margin-bottom:12px;">
           <div class="panel-head" style="margin-bottom:8px;">
@@ -199,23 +129,11 @@
 
             <form method="post" action="/painel/profissionais/criar-acesso/{{ p.id }}">
               <div style="margin-bottom:10px;">
-                <input
-                  class="input"
-                  type="email"
-                  name="email"
-                  placeholder="Email do funcionário"
-                  required
-                >
+                <input class="input" type="email" name="email" placeholder="Email do funcionário" required>
               </div>
 
               <div style="margin-bottom:10px;">
-                <input
-                  class="input"
-                  type="text"
-                  name="senha"
-                  placeholder="Senha do funcionário"
-                  required
-                >
+                <input class="input" type="text" name="senha" placeholder="Senha do funcionário" required>
               </div>
 
               <button class="btn primary" type="submit" style="width:100%;">

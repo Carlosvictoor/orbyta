@@ -2,11 +2,11 @@ import os
 import uuid
 from datetime import datetime
 
-from flask import Blueprint, render_template, request, redirect, session, flash
+from flask import Blueprint, render_template, request, redirect, session, flash, current_app
 
 from core.auth import exigir_dono, usuario_atual, exigir_assinatura_dono
 from core.constants import AGENDAMENTOS_FILE, APP_BASE_URL, MP_ACCESS_TOKEN, MP_PUBLIC_KEY, RANKING_RESET_FILE, USUARIOS_FILE
-from core.helpers import parse_money_br, SLOTS_PADRAO_30, clamp_pct
+from core.helpers import parse_money_br, SLOTS_PADRAO_30, clamp_pct, salvar_imagem_upload
 from core.json_db import carregar_json, salvar_json
 from core.security import hash_senha, senha_forte
 
@@ -32,9 +32,14 @@ from services.financeiro_service import (
     remover_lancamento_financeiro,
     zerar_financeiro_mes,
 )
-from services.whatsapp_service import send_whatsapp_message, telefone_valido_br
+from services.whatsapp_service import send_whatsapp_message, telefone_valido_br, normalizar_telefone_e164
 
 dono_bp = Blueprint("dono", __name__)
+
+
+def _whatsapp_link(telefone: str) -> str:
+    numero = normalizar_telefone_e164(telefone or "")
+    return f"https://wa.me/{numero}" if numero else ""
 
 
 @dono_bp.route("/painel")
@@ -65,6 +70,10 @@ def painel():
     ag = carregar_json(AGENDAMENTOS_FILE)
     ag_do_negocio = [a for a in ag if int(a.get("negocio_id", 0)) == negocio_id]
     ag_do_negocio.sort(key=lambda x: (x.get("data", ""), x.get("horario", "")), reverse=True)
+    for item in ag_do_negocio:
+        item["whatsapp_link"] = _whatsapp_link(item.get("telefone"))
+
+    negocio["whatsapp_link"] = _whatsapp_link(negocio.get("whatsapp"))
 
     times = obter_horarios_globais(negocio_id)
     horarios_funcionamento = [{"dia": "Todos os dias", "times": times}] if times else []
@@ -99,7 +108,9 @@ def painel():
                 "horario": horario_ag,
                 "nome": cliente or "Cliente",
                 "servico": servico or servico_nome_by_id(negocio_id, sid) or "Serviço",
-                "barbeiro": barbeiro or "Profissional"
+                "barbeiro": barbeiro or "Profissional",
+                "telefone": a.get("telefone", ""),
+                "whatsapp_link": _whatsapp_link(a.get("telefone", "")),
             })
 
         if data_ag[:7] == mes_atual:
@@ -342,6 +353,53 @@ def painel_whatsapp_teste():
     return redirect("/painel")
 
 
+@dono_bp.route("/painel/personalizar", methods=["POST"])
+def painel_personalizar():
+    if not exigir_dono():
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u or not exigir_assinatura_dono():
+        flash("Assine para acessar esta área ✅")
+        return redirect("/assinar")
+
+    negocio_id = int(session.get("negocio_id") or 0)
+    negocio = get_negocio(negocio_id)
+    if not negocio:
+        flash("Negócio não encontrado.")
+        return redirect("/painel")
+
+    foto_url = request.form.get("foto_url", "").strip()
+    descricao_curta = request.form.get("descricao_curta", "").strip()
+    instagram = request.form.get("instagram", "").strip()
+    remover_foto = request.form.get("remover_foto") == "1"
+
+    foto_upload, erro_upload = salvar_imagem_upload(
+        request.files.get("foto_arquivo"),
+        current_app.static_folder,
+        prefix=f"negocio-{negocio_id}",
+    )
+    if erro_upload:
+        flash(erro_upload)
+        return redirect("/painel")
+
+    patch = {
+        "descricao_curta": descricao_curta,
+        "instagram": instagram,
+    }
+
+    if remover_foto:
+        patch["foto"] = ""
+    elif foto_upload:
+        patch["foto"] = foto_upload
+    elif foto_url:
+        patch["foto"] = foto_url
+
+    atualizar_negocio(negocio_id, patch)
+    flash("Página da loja atualizada ✅")
+    return redirect("/painel")
+
+
 @dono_bp.route("/painel/financeiro", methods=["GET", "POST"])
 def painel_financeiro():
     if not exigir_dono():
@@ -359,7 +417,9 @@ def painel_financeiro():
         return redirect("/painel")
 
     mes = request.args.get("mes", "").strip()
-    if not mes:
+    try:
+        datetime.strptime(mes, "%Y-%m")
+    except Exception:
         mes = datetime.now().strftime("%Y-%m")
 
     if request.method == "POST":
@@ -367,10 +427,10 @@ def painel_financeiro():
         if tipo not in ["entrada", "saida"]:
             tipo = "saida"
 
-        categoria = request.form.get("categoria", "").strip()
+        categoria = request.form.get("categoria", "").strip() or ("Entrada manual" if tipo == "entrada" else "Despesa geral")
         desc = request.form.get("descricao", "").strip()
         valor_raw = request.form.get("valor", "").strip()
-        data = request.form.get("data", "").strip()
+        data = request.form.get("data", "").strip() or datetime.now().strftime("%Y-%m-%d")
 
         v = parse_money_br(valor_raw)
         if v <= 0:
@@ -381,10 +441,6 @@ def painel_financeiro():
             datetime.strptime(data, "%Y-%m-%d")
         except Exception:
             flash("Data inválida.")
-            return redirect(f"/painel/financeiro?mes={mes}")
-
-        if not categoria:
-            flash("Categoria é obrigatória.")
             return redirect(f"/painel/financeiro?mes={mes}")
 
         itens_existentes = financeiro_do_negocio(negocio_id)
@@ -407,7 +463,7 @@ def painel_financeiro():
 
         salvar_lancamento_financeiro(item)
 
-        flash("Lançamento salvo ✅")
+        flash(f"Lançamento salvo ✅ {categoria} • R$ {round(v, 2):.2f}")
         return redirect(f"/painel/financeiro?mes={mes}")
 
     itens = financeiro_do_negocio(negocio_id)
@@ -499,7 +555,8 @@ def painel_financeiro():
         serie=serie,
         entradas_auto=round(entradas_auto, 2),
         entradas_manual=round(entradas_manual, 2),
-        profs=profs
+        profs=profs,
+        data_hoje=datetime.now().strftime("%Y-%m-%d"),
     )
 
 
@@ -777,6 +834,8 @@ def painel_profissionais_novo():
     if request.method == "POST":
         nome = request.form["nome"].strip()
         categoria = request.form.get("categoria", "").strip().lower()
+        descricao = request.form.get("descricao", "").strip()
+        foto_url = request.form.get("foto_url", "").strip()
         comissao_pct = clamp_pct(request.form.get("comissao_pct", 50), 50)
 
         if not nome:
@@ -787,6 +846,15 @@ def painel_profissionais_novo():
             flash("Categoria é obrigatória.")
             return redirect("/painel/profissionais/novo")
 
+        foto_upload, erro_upload = salvar_imagem_upload(
+            request.files.get("foto_arquivo"),
+            current_app.static_folder,
+            prefix=f"profissional-{negocio_id}",
+        )
+        if erro_upload:
+            flash(erro_upload)
+            return redirect("/painel/profissionais/novo")
+
         profs = listar_profissionais()
         novo_id = max([int(p.get("id", 0)) for p in profs], default=0) + 1
 
@@ -795,6 +863,8 @@ def painel_profissionais_novo():
             "negocio_id": int(negocio_id),
             "nome": nome,
             "categoria": categoria,
+            "descricao": descricao,
+            "foto": foto_upload or foto_url,
             "comissao_pct": comissao_pct
         })
 
@@ -803,6 +873,49 @@ def painel_profissionais_novo():
         return redirect("/painel/profissionais")
 
     return render_template("painel_profissionais_novo.html", negocio=negocio)
+
+
+@dono_bp.route("/painel/profissionais/perfil/<int:prof_id>", methods=["POST"])
+def atualizar_perfil_profissional(prof_id):
+    if not exigir_dono():
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u or not exigir_assinatura_dono():
+        flash("Assine para acessar esta área ✅")
+        return redirect("/assinar")
+
+    negocio_id = int(session.get("negocio_id") or 0)
+    foto_url = request.form.get("foto_url", "").strip()
+    descricao = request.form.get("descricao", "").strip()
+    remover_foto = request.form.get("remover_foto") == "1"
+
+    foto_upload, erro_upload = salvar_imagem_upload(
+        request.files.get("foto_arquivo"),
+        current_app.static_folder,
+        prefix=f"profissional-{prof_id}",
+    )
+    if erro_upload:
+        flash(erro_upload)
+        return redirect("/painel/profissionais")
+
+    profs = listar_profissionais()
+    ok = False
+    for p in profs:
+        if int(p.get("id", 0)) == int(prof_id) and int(p.get("negocio_id", 0)) == negocio_id:
+            p["descricao"] = descricao
+            if remover_foto:
+                p["foto"] = ""
+            elif foto_upload:
+                p["foto"] = foto_upload
+            elif foto_url:
+                p["foto"] = foto_url
+            ok = True
+            break
+
+    salvar_profissionais(profs)
+    flash("Perfil do profissional atualizado ✅" if ok else "Profissional não encontrado.")
+    return redirect("/painel/profissionais")
 
 
 @dono_bp.route("/painel/profissionais/comissao/<int:prof_id>", methods=["POST"])

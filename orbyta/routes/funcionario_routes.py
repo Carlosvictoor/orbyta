@@ -1,18 +1,24 @@
 from datetime import datetime
-from flask import Blueprint, render_template, request, redirect, flash
+from flask import Blueprint, render_template, request, redirect, flash, current_app
 
 from core.auth import exigir_funcionario, usuario_atual
 from core.constants import AGENDAMENTOS_FILE, FINANCEIRO_FILE
 from core.json_db import carregar_json
 
-from core.helpers import clamp_pct
+from core.helpers import clamp_pct, salvar_imagem_upload
 from services.negocios_service import get_negocio
-from services.profissionais_service import get_profissional
+from services.profissionais_service import get_profissional, listar_profissionais, salvar_profissionais
 from services.servicos_service import servico_preco, servico_nome_by_id
 from services.profissionais_service import comissao_pct_profissional
 from services.financeiro_service import calcular_valores_comissao
+from services.whatsapp_service import normalizar_telefone_e164
 
 funcionario_bp = Blueprint("funcionario", __name__)
+
+
+def _whatsapp_link(telefone: str) -> str:
+    numero = normalizar_telefone_e164(telefone or "")
+    return f"https://wa.me/{numero}" if numero else ""
 
 
 @funcionario_bp.route("/painel-funcionario")
@@ -74,10 +80,13 @@ def painel_funcionario():
         pct_item = comissao_pct_profissional(negocio_id, profissional_id, nome_profissional)
         _, valor_profissional_item, valor_salao_item = calcular_valores_comissao(valor, pct_item)
 
+        telefone = a.get("telefone", "")
         meus_agendamentos.append({
             "data": a.get("data", ""),
             "horario": a.get("horario", ""),
             "cliente": a.get("nome", ""),
+            "telefone": telefone,
+            "whatsapp_link": _whatsapp_link(telefone),
             "servico": a.get("servico") or servico_nome_by_id(negocio_id, sid) or "Serviço",
             "valor": round(valor, 2),
             "comissao_pct": pct_item,
@@ -126,3 +135,51 @@ def painel_funcionario():
         saldo_final=round(saldo_final, 2),
         qtd_atendimentos=len(meus_agendamentos)
     )
+
+
+@funcionario_bp.route("/painel-funcionario/perfil", methods=["POST"])
+def painel_funcionario_perfil():
+    if not exigir_funcionario():
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u:
+        return redirect("/login")
+
+    negocio_id = int(u.get("negocio_id") or 0)
+    profissional_id = int(u.get("profissional_id") or 0)
+    if not negocio_id or not profissional_id:
+        flash("Seu perfil não está vinculado corretamente.")
+        return redirect("/logout")
+
+    foto_url = request.form.get("foto_url", "").strip()
+    descricao = request.form.get("descricao", "").strip()
+    remover_foto = request.form.get("remover_foto") == "1"
+    mes = request.args.get("mes", "").strip() or datetime.now().strftime("%Y-%m")
+
+    foto_upload, erro_upload = salvar_imagem_upload(
+        request.files.get("foto_arquivo"),
+        current_app.static_folder,
+        prefix=f"funcionario-{profissional_id}",
+    )
+    if erro_upload:
+        flash(erro_upload)
+        return redirect(f"/painel-funcionario?mes={mes}")
+
+    profs = listar_profissionais()
+    ok = False
+    for p in profs:
+        if int(p.get("id", 0)) == profissional_id and int(p.get("negocio_id", 0)) == negocio_id:
+            p["descricao"] = descricao
+            if remover_foto:
+                p["foto"] = ""
+            elif foto_upload:
+                p["foto"] = foto_upload
+            elif foto_url:
+                p["foto"] = foto_url
+            ok = True
+            break
+
+    salvar_profissionais(profs)
+    flash("Seu perfil foi atualizado ✅" if ok else "Não foi possível atualizar seu perfil.")
+    return redirect(f"/painel-funcionario?mes={mes}")

@@ -104,11 +104,18 @@
 
   <div class="top">
     <div class="left">
-      <div class="logo">{{ negocio.nome[:1] }}</div>
+      {% if negocio.foto %}
+        <img src="{{ negocio.foto }}" alt="{{ negocio.nome }}" style="width:72px; height:72px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,.08);">
+      {% else %}
+        <div class="logo">{{ negocio.nome[:1] }}</div>
+      {% endif %}
       <div class="title">
         <div class="page-kicker">Perfil do negócio</div>
         <h1>{{ negocio.nome }}</h1>
         <p>{{ negocio.bairro }} • {{ negocio.cidade }}</p>
+        {% if negocio.descricao_curta %}
+          <p style="margin-top:8px; max-width:560px;">{{ negocio.descricao_curta }}</p>
+        {% endif %}
       </div>
     </div>
 
@@ -193,7 +200,10 @@
 
         <div class="info-row">
           <div>
-            {{ negocio.whatsapp }}
+            <strong>WhatsApp:</strong>
+            <a href="https://wa.me/55{{ negocio.whatsapp }}" target="_blank" rel="noopener noreferrer">
+              {{ negocio.whatsapp }}
+            </a>
           </div>
         </div>
 
