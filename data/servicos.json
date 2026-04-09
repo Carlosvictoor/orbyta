@@ -1,0 +1,10 @@
+[
+    {
+        "id": 1,
+        "negocio_id": 2,
+        "nome": "nail arte",
+        "duracao_min": 120,
+        "preco": "110,00",
+        "ativo": true
+    }
+]

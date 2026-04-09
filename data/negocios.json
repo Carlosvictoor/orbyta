@@ -1,0 +1,20 @@
+[
+    {
+        "id": 1,
+        "tipo": "barbearias",
+        "nome": "barbearia stilo vk",
+        "cidade": "Praia Grande",
+        "bairro": "vila sonia",
+        "endereco": "rua sergio gregorio 3860",
+        "whatsapp": "13981865074"
+    },
+    {
+        "id": 2,
+        "tipo": "saloes",
+        "nome": "Duda nail designer",
+        "cidade": "Praia Grande",
+        "bairro": "Nova Mirim",
+        "endereco": "Rua do mc",
+        "whatsapp": "13981865074"
+    }
+]

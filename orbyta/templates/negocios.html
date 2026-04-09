@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Negocios</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container page">
+  <div class="page-hero">
+    <div>
+      <span class="page-kicker">Escolha seu atendimento</span>
+      <h1>{{ titulo }}</h1>
+      <p class="page-subtitle">Encontre o negócio ideal, compare localização e já avance para o agendamento em poucos cliques.</p>
+    </div>
+
+    <a href="/" class="btn outline">← Voltar ao início</a>
+  </div>
+
+  <div class="search-card">
+    <form method="get" class="search">
+      <input name="q" placeholder="Buscar por nome, cidade ou bairro..." value="{{ q }}">
+      <button type="submit">Buscar</button>
+    </form>
+    <div class="results-meta">{{ lista|length }} negócio(s) encontrado(s).</div>
+  </div>
+
+  {% if lista|length == 0 %}
+    <div class="empty-state">
+      <strong>Nenhum negócio encontrado.</strong>
+      <p class="muted">Tente buscar pelo nome do local, bairro ou cidade para achar mais rápido.</p>
+    </div>
+  {% endif %}
+
+  <div class="grid">
+    {% for n in lista %}
+      <div class="biz-card">
+        <h3>{{ n.nome }}</h3>
+        <p class="muted">{{ n.bairro }} • {{ n.cidade }}</p>
+
+        <div class="biz-meta">
+          <span class="chip">📍 {{ n.bairro }}</span>
+          <span class="chip">🏙 {{ n.cidade }}</span>
+        </div>
+
+        <p style="opacity:.88;">{{ n.endereco }}</p>
+
+        <div class="biz-actions">
+          <a class="btn outline" href="https://wa.me/55{{ n.whatsapp }}" target="_blank">WhatsApp</a>
+          <a class="btn outline" href="/loja/{{ n.id }}">Ver loja</a>
+          <a class="btn primary" href="/agenda/{{ n.id }}">Agendar</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+</div>
+</body>
+</html>

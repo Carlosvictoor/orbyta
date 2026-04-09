@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Financeiro • {{ negocio.nome }}</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<div class="dash">
+
+  <div class="dash-top">
+    <div class="dash-title">
+      <h1>Financeiro</h1>
+      <p>{{ negocio.nome }} • {{ negocio.bairro }} • {{ negocio.cidade }}</p>
+    </div>
+
+    <div class="dash-actions">
+      <a class="link-btn" href="/painel">Painel</a>
+      <a class="link-btn" href="/painel/servicos">Serviços</a>
+      <a class="link-btn" href="/painel/profissionais">Profissionais</a>
+      <a class="link-btn" href="/painel/horarios">Horários</a>
+      <a class="link-btn" href="/logout">Sair</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Mês</h2>
+      <div class="filters">
+        <input class="input" id="mes" value="{{ mes }}" placeholder="YYYY-MM" style="width:140px">
+        <button class="btn primary" id="goMes" type="button">Aplicar</button>
+      </div>
+    </div>
+    <div class="small-muted">Dica: use 2026-03, 2026-04…</div>
+  </div>
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>Fontes do faturamento</h2>
+      <span class="small-muted">Automático vem dos agendamentos</span>
+    </div>
+    <div class="two-col" style="margin-top:0;">
+      <div class="small-muted">
+        Automático (agendamentos): <strong>R$ {{ entradas_auto }}</strong>
+      </div>
+      <div class="small-muted">
+        Manual (lançamentos): <strong>R$ {{ entradas_manual }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Faturamento</div>
+      <div class="value">R$ {{ entradas }}</div>
+      <div class="hint">Total de entradas do mês</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Despesas</div>
+      <div class="value">R$ {{ saidas }}</div>
+      <div class="hint">Saídas do mês</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Lucro</div>
+      <div class="value">R$ {{ lucro }}</div>
+      <div class="hint">Entradas - Saídas</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Ticket médio</div>
+      <div class="value">R$ {{ ticket }}</div>
+      <div class="hint">{{ qtd_vendas }} vendas (agendamentos)</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Gráfico diário</h2>
+        <span class="small-muted">Entradas vs Saídas</span>
+      </div>
+
+      <div class="chart" id="chart"></div>
+      <div class="small-muted" style="margin-top:10px;">(Gráfico leve, sem biblioteca)</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Novo lançamento</h2>
+        <span class="small-muted">Use para despesas e receitas extras</span>
+      </div>
+
+      <form method="post" action="/painel/financeiro?mes={{ mes }}">
+        <div class="two-col" style="margin-top:0;">
+          <select class="input" name="tipo" required>
+            <option value="saida" selected>Saída (despesa)</option>
+            <option value="entrada">Entrada (manual)</option>
+          </select>
+
+          <input class="input" name="categoria" placeholder="Categoria (ex: Aluguel, Produtos, Luz)" required />
+        </div>
+
+        <div style="margin-top:10px;">
+          <input class="input" name="descricao" placeholder="Descrição (opcional)" />
+        </div>
+
+        <div style="margin-top:10px;">
+          <select class="input" name="profissional_id">
+            <option value="">Lançamento geral do salão</option>
+            {% for p in profs %}
+              <option value="{{ p.id }}">
+                {{ p.nome }} • {{ p.categoria }} • Comissão {{ p.comissao_pct or 50 }}%
+              </option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="small-muted" style="margin-top:8px;">
+          Se selecionar um profissional, essa saída também aparecerá no painel dele.
+        </div>
+
+        <div class="two-col">
+          <input class="input" name="valor" placeholder="Valor (ex: 35,00)" required />
+          <input class="input" type="date" name="data" required />
+        </div>
+
+        <button class="btn primary" style="width:100%; margin-top:10px;" type="submit">
+          Salvar lançamento
+        </button>
+
+        <div class="small-muted" style="margin-top:8px;">
+          Entradas automáticas são geradas a partir dos agendamentos. Se o cliente for cancelado, ele não entra no financeiro.
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>Lançamentos</h2>
+      <div class="filters">
+        <input class="input" id="q" placeholder="Buscar (origem, tipo, categoria, descrição, profissional…)">
+      </div>
+    </div>
+
+    {% if itens and itens|length > 0 %}
+      <table class="table" id="tbl">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Tipo</th>
+            <th>Origem</th>
+            <th>Categoria</th>
+            <th>Descrição</th>
+            <th>Profissional</th>
+            <th>Valor</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for x in itens %}
+          <tr>
+            <td>{{ x.data }}</td>
+
+            <td>
+              {% if x.tipo == "entrada" %}
+                <span class="badge">Entrada</span>
+              {% else %}
+                <span class="badge red">Saída</span>
+              {% endif %}
+            </td>
+
+            <td>
+              {% if x.origem == "agendamento" %}
+                <span class="badge">Automático</span>
+              {% else %}
+                <span class="badge gray">Manual</span>
+              {% endif %}
+            </td>
+
+            <td>{{ x.categoria }}</td>
+            <td>{{ x.descricao or "—" }}</td>
+
+            <td>
+              {% if x.profissional_id %}
+                {% set nome_prof = "—" %}
+                {% for p in profs %}
+                  {% if p.id == x.profissional_id %}
+                    {% set nome_prof = p.nome %}
+                  {% endif %}
+                {% endfor %}
+                {{ nome_prof }}
+              {% else %}
+                <span class="small-muted">Geral</span>
+              {% endif %}
+            </td>
+
+            <td><strong>R$ {{ x.valor }}</strong></td>
+
+            <td style="text-align:right; white-space:nowrap;">
+              {% if x.origem == "agendamento" %}
+                <a class="link-btn" href="/painel/agendamentos/cancelar/{{ x.agendamento_id|urlencode }}">Cancelar</a>
+                <a class="link-btn" href="/painel/agendamentos/excluir/{{ x.agendamento_id|urlencode }}">Excluir</a>
+              {% else %}
+                <a class="link-btn" href="/painel/financeiro/excluir/{{ x.id }}?mes={{ mes }}">Excluir</a>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="small-muted">Ainda não há lançamentos neste mês.</div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script id="serie-data" type="application/json">
+  {{ serie | default([], true) | tojson | safe }}
+</script>
+
+<script>
+  const goMes = document.getElementById("goMes");
+  if (goMes) {
+    goMes.onclick = () => {
+      const m = (document.getElementById("mes")?.value || "").trim();
+      if (m) {
+        window.location.href = `/painel/financeiro?mes=${encodeURIComponent(m)}`;
+      }
+    };
+  }
+
+  const q = document.getElementById("q");
+  const tbl = document.getElementById("tbl");
+  if (q && tbl) {
+    q.addEventListener("input", () => {
+      const term = q.value.toLowerCase().trim();
+      tbl.querySelectorAll("tbody tr").forEach(tr => {
+        const txt = tr.innerText.toLowerCase();
+        tr.style.display = txt.includes(term) ? "" : "none";
+      });
+    });
+  }
+
+  const chart = document.getElementById("chart");
+  let serie = [];
+
+  try {
+    const rawSerie = document.getElementById("serie-data")?.textContent?.trim() || "[]";
+    serie = JSON.parse(rawSerie);
+    if (!Array.isArray(serie)) {
+      serie = [];
+    }
+  } catch (e) {
+    console.error("Erro ao ler série do gráfico:", e);
+    serie = [];
+  }
+
+  if (chart) {
+    if (!serie.length) {
+      chart.innerHTML = '<div class="small-muted">Sem dados no mês selecionado.</div>';
+    } else {
+      const maxVal = Math.max(
+        ...serie.map(d => Math.max(Number(d.entrada || 0), Number(d.saida || 0), 1))
+      );
+
+      chart.innerHTML = serie.map(d => {
+        const entrada = Number(d.entrada || 0);
+        const saida = Number(d.saida || 0);
+        const e = Math.round((entrada / maxVal) * 100);
+        const s = Math.round((saida / maxVal) * 100);
+        const dia = String(d.dia || "");
+        const label = dia ? `${dia.slice(8, 10)}/${dia.slice(5, 7)}` : "--/--";
+
+        return `
+          <div class="chart-row">
+            <div class="chart-label">${label}</div>
+            <div class="chart-bars">
+              <div class="bar in" style="width:${e}%"></div>
+              <div class="bar out" style="width:${s}%"></div>
+            </div>
+            <div class="chart-val">R$ ${entrada.toFixed(2)} / ${saida.toFixed(2)}</div>
+          </div>
+        `;
+      }).join("");
+    }
+  }
+</script>
+
+</body>
+</html>

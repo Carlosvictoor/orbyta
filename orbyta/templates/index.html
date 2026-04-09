@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orbyta</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+
+<header class="navbar">
+
+  <div class="logo">
+    Orbyta 🪐
+  </div>
+
+  <nav class="menu">
+    <ul>
+      <li class="dropdown">
+        <button class="dropbtn">Negócios ▾</button>
+        <div class="dropdown-content">
+          <a href="/negocios/saloes">Salões de Beleza</a>
+          <a href="/negocios/barbearias">Barbearias</a>
+          <a href="/negocios/clinicas">Clínicas de Estética</a>
+          <a href="/negocios/studios">Studios</a>
+        </div>
+      </li>
+
+      <li><a href="/planos">Planos</a></li>
+      <li><a href="#sobre">A Orbyta</a></li>
+      <li><a href="/cliente">Meus Agendamentos</a></li>
+    </ul>
+  </nav>
+
+  <div class="actions">
+    {% if session.get("usuario") %}
+      {% if session.get("tipo") == "cliente" %}
+        <a href="/cliente" class="btn primary">Minha conta</a>
+        <a href="/logout" class="btn outline">Sair</a>
+
+      {% elif session.get("tipo") == "dono" %}
+        <a href="/painel" class="btn primary">Painel</a>
+        <a href="/logout" class="btn outline">Sair</a>
+
+      {% elif session.get("tipo") == "admin" %}
+        <a href="/admin" class="btn primary">Admin</a>
+        <a href="/logout" class="btn outline">Sair</a>
+
+      {% else %}
+        <a href="/logout" class="btn outline">Sair</a>
+      {% endif %}
+
+    {% else %}
+      <a href="/login" class="btn primary">Entrar</a>
+      <a href="/cadastro" class="btn outline">Criar Conta</a>
+    {% endif %}
+  </div>
+
+</header>
+
+<!-- HERO -->
+<div class="container home-hero">
+  <span class="page-kicker">Agendamentos online para beleza</span>
+  <h1>Clientes agendam em minutos. Seu negócio atende com mais organização.</h1>
+
+  <p class="subtitle">
+    A Orbyta deixa a jornada mais leve para quem agenda e mais profissional para quem atende — tudo em um fluxo simples, bonito e direto.
+  </p>
+
+  <div class="hero-actions">
+    <a href="/negocios/barbearias" class="btn primary">Agendar agora</a>
+    {% if not session.get("usuario") %}
+      <a href="/cadastro" class="btn outline">Criar conta grátis</a>
+    {% else %}
+      <a href="/cliente" class="btn outline">Ver meus agendamentos</a>
+    {% endif %}
+  </div>
+
+  {% if session.get("usuario") %}
+    <p style="opacity:.8; margin-top:14px;">
+      Logado como: <b>{{ session.get("usuario") }}</b>
+    </p>
+  {% endif %}
+
+  <div class="hero-stat-row">
+    <div class="hero-stat">
+      <strong>⚡ Agendamento rápido</strong>
+      <span>O cliente escolhe serviço, profissional e horário sem complicação.</span>
+    </div>
+    <div class="hero-stat">
+      <strong>📲 Menos WhatsApp</strong>
+      <span>Menos troca manual de mensagem e mais tempo para atender bem.</span>
+    </div>
+    <div class="hero-stat">
+      <strong>🗓 Organização real</strong>
+      <span>Agenda mais clara para o cliente e para o negócio.</span>
+    </div>
+  </div>
+</div>
+
+<div class="container page home-section" id="sobre">
+  <div class="page-hero">
+    <div>
+      <span class="page-kicker">Por que a Orbyta</span>
+      <h2>Uma experiência simples, bonita e prática do começo ao fim</h2>
+      <p class="page-subtitle">
+        A ideia é fazer o cliente sentir confiança ao marcar e o negócio ganhar eficiência no atendimento.
+      </p>
+    </div>
+  </div>
+
+  <div class="feature-grid">
+    <div class="feature-card">
+      <h3>Escolha visual e rápida</h3>
+      <p class="muted">O cliente encontra o negócio, visualiza opções e agenda em poucos passos.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Menos erro de horário</h3>
+      <p class="muted">A plataforma ajuda a reduzir confusões, choques e horários duplicados.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Mais profissionalismo</h3>
+      <p class="muted">O negócio transmite mais confiança com um fluxo moderno e organizado.</p>
+    </div>
+  </div>
+</div>
+
+<div class="container page home-section">
+  <span class="page-kicker">Para quem é</span>
+  <div class="feature-grid" style="margin-top:14px;">
+    <div class="feature-card">
+      <h3>Barbearias</h3>
+      <p class="muted">Agenda organizada e clientes agendando sem precisar ligar.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Salões de beleza</h3>
+      <p class="muted">Mais tempo atendendo e menos tempo respondendo mensagem.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Clínicas de estética</h3>
+      <p class="muted">Melhor visão de horários, serviços e profissionais disponíveis.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Studios e nails</h3>
+      <p class="muted">Uma experiência elegante e prática para encantar quem agenda.</p>
+    </div>
+  </div>
+</div>
+
+<div class="container page home-section">
+  <span class="page-kicker">Nosso propósito</span>
+  <h2>Colocar negócios de beleza na órbita do crescimento</h2>
+  <p class="page-subtitle">
+    Tecnologia simples, acessível e eficiente para transformar a forma como clientes e negócios se conectam.
+  </p>
+
+  <div style="margin-top:18px;" class="hero-actions">
+    <a href="/negocios/saloes" class="btn outline">Ver salões</a>
+    <a href="/negocios/studios" class="btn outline">Ver studios</a>
+  </div>
+</div>
+
+<script>
+  const dropdown = document.querySelector(".dropdown");
+  const button = document.querySelector(".dropbtn");
+
+  button.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("active");
+  });
+
+  document.addEventListener("click", () => {
+    dropdown.classList.remove("active");
+  });
+</script>
+
+</body>
+</html>

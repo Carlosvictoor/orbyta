@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Novo profissional • {{ negocio.nome }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="auth-center">
+  <div class="card">
+    <h2>Novo profissional</h2>
+    <p style="opacity:.8; margin-top:-8px;">{{ negocio.nome }}</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <p style="color:#ff5252; font-weight:bold; margin:10px 0;">{{ msg }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <input
+        name="nome"
+        type="text"
+        placeholder="Nome do profissional"
+        required
+      >
+
+      <label style="display:block; text-align:left; width:90%; margin:6px auto 6px; opacity:.9;">
+        Categoria
+      </label>
+
+      <select name="categoria" required>
+        <option value="">Selecione</option>
+        <option value="barbeiro">Barbeiro</option>
+        <option value="nail">Nail Designer</option>
+        <option value="estetica">Estética</option>
+      </select>
+
+      <label style="display:block; text-align:left; width:90%; margin:14px auto 6px; opacity:.9;">
+        Comissão (%)
+      </label>
+
+      <input
+        name="comissao_pct"
+        type="number"
+        min="0"
+        max="100"
+        step="0.01"
+        value="50"
+        placeholder="Ex: 50"
+        required
+      >
+
+      <div style="width:90%; margin:8px auto 0; font-size:13px; opacity:.75; text-align:left;">
+        Exemplo: 60 = profissional recebe 60% de cada atendimento.
+      </div>
+
+      <button type="submit">Salvar profissional</button>
+    </form>
+
+    <div style="text-align:center; margin-top:14px;">
+      <a href="/painel/profissionais">← Voltar para profissionais</a>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

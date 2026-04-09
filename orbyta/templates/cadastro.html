@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="auth-center">
+  <div class="card auth-shell">
+    <span class="auth-kicker">Comece em poucos segundos</span>
+    <h2>Criar conta na Orbyta ✨</h2>
+    <p class="auth-subtitle">
+      Faça seu cadastro para agendar online, acompanhar horários e voltar aos seus negócios favoritos sempre que quiser.
+    </p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="err">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="auth-list">
+      <span class="auth-pill">🆓 Cadastro rápido</span>
+      <span class="auth-pill">📍 Escolha o negócio ideal</span>
+      <span class="auth-pill">📲 Reagende com facilidade</span>
+      <span class="auth-pill">🔐 Senha protegida</span>
+    </div>
+
+    <form method="post" action="/cadastro">
+      <input name="email" type="email" placeholder="Seu email" required autocomplete="email">
+      <input name="senha" type="password" placeholder="Crie uma senha com pelo menos 6 caracteres" required minlength="6" autocomplete="new-password">
+      <button type="submit">Criar minha conta</button>
+      <p class="form-hint">Dica: use uma senha fácil de lembrar e segura para você.</p>
+    </form>
+
+    <div class="auth-footer" style="text-align:center; margin-top:14px;">
+      <span class="muted">Já possui acesso?</span><br>
+      <a href="/login">Entrar agora</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

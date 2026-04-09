@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Assinar • Orbyta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="logo">Orbyta 🪐</div>
+  <div class="actions">
+    <a href="/" class="btn outline">Início</a>
+    <a href="/logout" class="btn primary">Sair</a>
+  </div>
+</header>
+
+<div class="container page">
+  <h1>Assinar Orbyta Pro</h1>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  {% if u.get("assinatura_status") == "trial" and u.get("trial_ate") %}
+    <p style="opacity:.85; margin-top:8px;">
+      🎁 Seu teste grátis vai até <b>{{ u.trial_ate }}</b>
+    </p>
+  {% endif %}
+
+  <div class="summary-row" style="margin-top:18px;">
+    <div class="summary-card">
+      <span class="muted">Status atual</span>
+      <strong style="font-size:18px;">{{ (u.get('assinatura_status') or 'não iniciado')|capitalize }}</strong>
+    </div>
+    <div class="summary-card">
+      <span class="muted">Mercado Pago</span>
+      <strong style="font-size:18px;">{{ 'Configurado' if token_configurado else 'Pendente' }}</strong>
+    </div>
+  </div>
+
+  {% if not token_configurado %}
+    <div class="err">Configure `MP_ACCESS_TOKEN` e `APP_BASE_URL` no `.env` antes de publicar o pagamento em produção.</div>
+  {% endif %}
+
+  <div class="grid" style="margin-top:24px;">
+    <div class="biz-card">
+      <h3>Plano Orbyta Pro</h3>
+
+      <p style="font-size:22px; margin:8px 0;">
+        <b>R$ {{ "%.2f"|format(valor) }}</b> / mês
+      </p>
+
+      <ul style="opacity:.85; padding-left:18px;">
+        <li>Agenda online ilimitada</li>
+        <li>Cadastro de profissionais</li>
+        <li>Painel do negócio</li>
+        <li>Clientes agendam sozinhos</li>
+        <li>Suporte Orbyta</li>
+      </ul>
+
+      <p style="opacity:.8; margin-top:10px;">
+        Cancele quando quiser.
+      </p>
+
+      <div class="biz-actions" style="margin-top:16px;">
+        <a href="/assinar/cartao" class="btn primary">
+          💳 Cartão recorrente
+        </a>
+        <a href="/assinar/pix" class="btn outline">
+          ⚡ Pagar com Pix
+        </a>
+        <a href="/assinatura/status" class="link-btn">
+          🔄 Verificar pagamento
+        </a>
+      </div>
+
+      <p class="small-muted" style="margin-top:12px;">
+        Dica: em produção, configure o webhook do Mercado Pago apontando para <code>/webhook/mercadopago</code>.
+      </p>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;">
+    <a href="/">← Voltar para o site</a>
+  </div>
+</div>
+
+</body>
+</html> 

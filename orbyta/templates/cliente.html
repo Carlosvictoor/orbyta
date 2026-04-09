@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meus Agendamentos • Orbyta</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="logo">Orbyta 🪐</div>
+
+  <div class="actions">
+    <a href="/" class="btn outline">Início</a>
+    <a href="/logout" class="btn primary">Sair</a>
+  </div>
+</header>
+
+<div class="container page">
+  <div class="page-hero">
+    <div>
+      <span class="page-kicker">Área do cliente</span>
+      <h1>Meus agendamentos</h1>
+      <p class="page-subtitle">Acompanhe seus horários, veja os detalhes do atendimento e agende novamente em poucos toques.</p>
+      <p class="muted">Logado como: <b>{{ session.usuario }}</b></p>
+    </div>
+
+    <div class="hero-actions">
+      <a href="/" class="btn outline">Explorar negócios</a>
+    </div>
+  </div>
+
+  <div class="summary-row">
+    <div class="summary-card">
+      <span class="muted">Agendamentos salvos</span>
+      <strong>{{ meus|length }}</strong>
+    </div>
+    <div class="summary-card">
+      <span class="muted">Conta conectada</span>
+      <strong style="font-size:16px; word-break:break-word;">{{ session.usuario }}</strong>
+    </div>
+    <div class="summary-card">
+      <span class="muted">Próxima ação</span>
+      <strong style="font-size:16px;">Reagendar com rapidez</strong>
+    </div>
+  </div>
+
+  {% if meus|length == 0 %}
+    <div class="empty-state">
+      <strong>Você ainda não tem agendamentos.</strong>
+      <p class="muted">Escolha um negócio, selecione um horário e tudo vai aparecer aqui para você acompanhar com facilidade.</p>
+      <a href="/" class="btn primary">Encontrar um negócio</a>
+    </div>
+  {% else %}
+    <div class="appointments-grid">
+      {% for a in meus %}
+        <div class="appointment-card">
+          <div class="appointment-top">
+            <div>
+              <p class="muted" style="margin:0 0 6px;">{{ a.negocio_nome }}</p>
+              <h3>{{ a.data }} • {{ a.horario }}</h3>
+            </div>
+            <span class="chip">{{ a.servico or 'Agendamento' }}</span>
+          </div>
+
+          <div class="meta-list">
+            <span class="chip">👤 {{ a.barbeiro }}</span>
+            <span class="chip">📌 {{ a.nome }}</span>
+            <span class="chip">
+              {% if a.status_confirmacao == 'confirmado' %}
+                ✅ Confirmado
+              {% elif a.status_confirmacao == 'cancelado' %}
+                ❌ Cancelado
+              {% elif a.status_confirmacao == 'sem_whatsapp' %}
+                ℹ️ Sem WhatsApp
+              {% else %}
+                ⏳ Aguardando confirmação
+              {% endif %}
+            </span>
+          </div>
+
+          {% if a.negocio_id %}
+            <div class="biz-actions" style="margin-top:10px;">
+              <a class="btn outline" href="/loja/{{ a.negocio_id }}">Ver loja</a>
+              <a class="btn primary" href="/agenda/{{ a.negocio_id }}">Agendar de novo</a>
+            </div>
+          {% endif %}
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+</div>
+
+</body>
+</html>

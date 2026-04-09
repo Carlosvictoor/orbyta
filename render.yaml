@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: orbyta-agendamentos
+    env: python
+    plan: starter
+    buildCommand: pip install -r requirements.txt
+    startCommand: python serve.py
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: SESSION_COOKIE_SECURE
+        value: "1"
+      - key: SESSION_COOKIE_NAME
+        value: "orbyta_session"
+      - key: PREFERRED_URL_SCHEME
+        value: "https"
+      - key: TRUST_PROXY
+        value: "1"
+      - key: ENABLE_REMINDER_WORKER
+        value: "1"
+      - key: ORBYTA_DATA_DIR
+        value: "/var/data/orbyta"
+    disk:
+      name: orbyta-data
+      mountPath: /var/data/orbyta
+      sizeGB: 1

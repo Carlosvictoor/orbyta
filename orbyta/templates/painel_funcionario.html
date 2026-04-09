@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meu Painel • {{ profissional.nome }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="dash">
+
+  <div class="dash-top">
+    <div class="dash-title">
+      <h1>Meu Painel</h1>
+      <p>{{ profissional.nome }} • {{ negocio.nome }}</p>
+    </div>
+
+    <div class="dash-actions">
+      <a class="link-btn" href="/logout">Sair</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="panel">
+    <div class="panel-head">
+      <h2>Mês</h2>
+      <div class="filters">
+        <input class="input" id="mes" value="{{ mes }}" placeholder="YYYY-MM" style="width:140px">
+        <button class="btn primary" id="goMes" type="button">Aplicar</button>
+      </div>
+    </div>
+    <div class="small-muted">Veja seu bruto, comissão, repasse e saídas por mês.</div>
+  </div>
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Bruto</div>
+      <div class="value">R$ {{ faturamento_bruto }}</div>
+      <div class="hint">Total dos seus atendimentos</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Comissão</div>
+      <div class="value">{{ comissao_pct }}%</div>
+      <div class="hint">Percentual configurado</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Seu repasse</div>
+      <div class="value">R$ {{ repasse_profissional }}</div>
+      <div class="hint">Valor que você recebe</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Parte do salão</div>
+      <div class="value">R$ {{ parte_salao }}</div>
+      <div class="hint">Parte que fica no negócio</div>
+    </div>
+  </div>
+
+  <div class="kpis" style="margin-top:12px;">
+    <div class="kpi">
+      <div class="label">Saídas</div>
+      <div class="value">R$ {{ saidas }}</div>
+      <div class="hint">Descontos, vales e outras saídas</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Saldo final</div>
+      <div class="value">R$ {{ saldo_final }}</div>
+      <div class="hint">Repasse - saídas</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Atendimentos</div>
+      <div class="value">{{ qtd_atendimentos }}</div>
+      <div class="hint">Quantidade no mês</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Meus atendimentos</h2>
+        <span class="small-muted">{{ qtd_atendimentos }} no mês</span>
+      </div>
+
+      {% if atendimentos and atendimentos|length > 0 %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Horário</th>
+              <th>Cliente</th>
+              <th>Serviço</th>
+              <th>Bruto</th>
+              <th>Seu valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for a in atendimentos %}
+            <tr>
+              <td>{{ a.data }}</td>
+              <td>{{ a.horario }}</td>
+              <td>{{ a.cliente }}</td>
+              <td>{{ a.servico }}</td>
+              <td>R$ {{ a.valor }}</td>
+              <td><strong>R$ {{ a.valor_profissional }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="small-muted">Nenhum atendimento encontrado neste mês.</div>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Minhas saídas</h2>
+        <span class="small-muted">Lançamentos vinculados ao seu perfil</span>
+      </div>
+
+      {% if minhas_saidas and minhas_saidas|length > 0 %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Categoria</th>
+              <th>Descrição</th>
+              <th>Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in minhas_saidas %}
+            <tr>
+              <td>{{ s.data }}</td>
+              <td>{{ s.categoria }}</td>
+              <td>{{ s.descricao or "—" }}</td>
+              <td><strong>R$ {{ s.valor }}</strong></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="small-muted">Nenhuma saída lançada para você neste mês.</div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const goMes = document.getElementById("goMes");
+  if (goMes) {
+    goMes.onclick = () => {
+      const m = (document.getElementById("mes")?.value || "").trim();
+      if (m) {
+        window.location.href = `/painel-funcionario?mes=${encodeURIComponent(m)}`;
+      }
+    };
+  }
+</script>
+
+</body>
+</html>

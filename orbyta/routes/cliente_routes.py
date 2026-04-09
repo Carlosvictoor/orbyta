@@ -1,0 +1,285 @@
+import uuid
+from datetime import datetime, timedelta
+
+from flask import Blueprint, render_template, request, redirect, session, flash
+
+from core.auth import exigir_login, exigir_cliente, usuario_atual
+from core.constants import AGENDAMENTOS_FILE, SERVICOS_FILE, PROFISSIONAIS_FILE
+from core.helpers import SLOTS_PADRAO_30
+from core.json_db import carregar_json, salvar_json
+
+from services.negocios_service import get_negocio, listar_negocios, salvar_negocios
+from services.profissionais_service import profissionais_do_negocio, get_profissional_por_nome
+from services.servicos_service import servicos_do_negocio, agrupar_servicos_por_categoria
+from services.horarios_service import obter_horarios_disponiveis, obter_horarios_globais
+from services.usuarios_service import atualizar_usuario
+from services.whatsapp_service import telefone_valido_br
+
+cliente_bp = Blueprint("cliente", __name__)
+
+
+@cliente_bp.route("/cliente")
+def cliente_painel():
+    if not exigir_login():
+        return redirect("/login")
+    if not exigir_cliente():
+        return redirect("/")
+
+    email = session.get("usuario")
+
+    ag = carregar_json(AGENDAMENTOS_FILE)
+    profs = carregar_json(PROFISSIONAIS_FILE)
+
+    meus = [a for a in ag if a.get("cliente") == email]
+    meus.sort(key=lambda x: (x.get("data", ""), x.get("horario", "")))
+
+    prof_map = {p.get("nome"): p for p in profs}
+    for a in meus:
+        a["status_confirmacao"] = a.get("status_confirmacao") or ("pendente" if a.get("telefone") else "sem_whatsapp")
+        negocio_nome = "—"
+        if a.get("negocio_id"):
+            n = get_negocio(a.get("negocio_id"))
+            if n:
+                negocio_nome = n.get("nome")
+        else:
+            p = prof_map.get(a.get("barbeiro"))
+            if p and p.get("negocio_id"):
+                n = get_negocio(p.get("negocio_id"))
+                if n:
+                    negocio_nome = n.get("nome")
+                    a["negocio_id"] = p.get("negocio_id")
+        a["negocio_nome"] = negocio_nome
+
+    return render_template("cliente.html", meus=meus)
+
+
+@cliente_bp.route("/agenda/<int:negocio_id>", methods=["GET", "POST"])
+def agenda(negocio_id):
+    if not exigir_login():
+        return redirect("/login")
+
+    u = usuario_atual() or {}
+
+    negocio = get_negocio(negocio_id)
+    if not negocio:
+        return "Negócio não encontrado", 404
+
+    profs = profissionais_do_negocio(negocio_id)
+    servs = servicos_do_negocio(negocio_id)
+    servicos_categoria = agrupar_servicos_por_categoria(servs)
+
+    horarios_configurados = bool(obter_horarios_globais(negocio_id))
+    servico_preselecionado = request.values.get("servico_id", "").strip()
+
+    if request.method == "POST":
+        nome = request.form["nome"].strip()
+        telefone = request.form.get("telefone", "").strip()
+        data = request.form["data"].strip()
+        horario = request.form["horario"].strip()
+        barbeiro = request.form["barbeiro"].strip()
+        servico_id = request.form["servico_id"].strip()
+
+        if not servs or not profs:
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse estabelecimento ainda não cadastrou serviços e profissionais para liberar a agenda.")
+        if not horarios_configurados:
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="O dono do estabelecimento ainda não configurou os horários de atendimento.")
+        if telefone and not telefone_valido_br(telefone):
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Informe um número de WhatsApp válido com DDD.")
+        if horario not in SLOTS_PADRAO_30:
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Horário inválido.")
+        if not servico_id.isdigit():
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Selecione um serviço válido.")
+
+        livres = obter_horarios_disponiveis(negocio_id, barbeiro, data, int(servico_id))
+        if horario not in livres:
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse horário não está disponível para esse barbeiro ou já foi reservado.")
+
+        profissional = get_profissional_por_nome(negocio_id, barbeiro)
+        profissional_id = int(profissional.get("id", 0)) if profissional else None
+
+        ag = carregar_json(AGENDAMENTOS_FILE)
+        for a in ag:
+            if (a.get("status_confirmacao") or "").strip().lower() == "cancelado":
+                continue
+
+            mesma_pessoa = False
+
+            a_prof_id = int(a.get("profissional_id", 0) or 0)
+            if profissional_id and a_prof_id == profissional_id:
+                mesma_pessoa = True
+            elif not profissional_id and (a.get("barbeiro") or "").strip().lower() == barbeiro.lower():
+                mesma_pessoa = True
+
+            if (
+                int(a.get("negocio_id", 0)) == int(negocio_id)
+                and a.get("data") == data
+                and a.get("horario") == horario
+                and mesma_pessoa
+            ):
+                return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Horário já ocupado para esse barbeiro!")
+
+        servico_nome = ""
+        for s in carregar_json(SERVICOS_FILE):
+            if int(s.get("id", 0)) == int(servico_id):
+                servico_nome = s.get("nome", "")
+                break
+
+        novo_id = max([int(a.get("id", 0) or 0) for a in ag], default=0) + 1
+
+        novo_agendamento = {
+            "id": novo_id,
+            "negocio_id": negocio_id,
+            "nome": nome,
+            "cliente": session["usuario"],
+            "telefone": telefone,
+            "data": data,
+            "horario": horario,
+            "barbeiro": barbeiro,
+            "servico_id": int(servico_id),
+            "servico": servico_nome,
+            "status_confirmacao": "pendente" if telefone else "sem_whatsapp",
+            "confirmacao_token": uuid.uuid4().hex,
+            "lembrete_whatsapp_status": "aguardando" if telefone else "não configurado",
+            "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        }
+
+        if profissional_id:
+            novo_agendamento["profissional_id"] = profissional_id
+
+        ag.append(novo_agendamento)
+        salvar_json(AGENDAMENTOS_FILE, ag)
+
+        if telefone:
+            atualizar_usuario(session["usuario"], {"telefone": telefone})
+            flash("Agendamento concluído! ✅ Se o WhatsApp automático estiver ativo, você receberá um lembrete 45 minutos antes.")
+        else:
+            flash("Agendamento concluído com sucesso! ✅")
+        return redirect(f"/agenda/{negocio_id}")
+
+    return render_template(
+        "agenda.html",
+        negocio=negocio,
+        profs=profs,
+        servs=servs,
+        servicos_categoria=servicos_categoria,
+        telefone_padrao=u.get("telefone", ""),
+        servico_preselecionado=servico_preselecionado,
+        horarios_configurados=horarios_configurados,
+    )
+
+@cliente_bp.route("/quero-ser-dono", methods=["GET", "POST"])
+def quero_ser_dono():
+    if not exigir_login():
+        flash("Faça login para criar seu negócio ✅")
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u:
+        return redirect("/login")
+
+    if u.get("tipo") == "admin":
+        return redirect("/admin")
+    if u.get("tipo") == "dono":
+        return redirect("/painel")
+
+    if request.method == "POST":
+        tipo = request.form.get("tipo", "").strip()
+        nome = request.form.get("nome", "").strip()
+        cidade = request.form.get("cidade", "").strip()
+        bairro = request.form.get("bairro", "").strip()
+        endereco = request.form.get("endereco", "").strip()
+        whatsapp = request.form.get("whatsapp", "").strip()
+
+        if not all([tipo, nome, cidade, bairro, endereco, whatsapp]):
+            flash("Preencha todos os campos do seu negócio.")
+            return redirect("/quero-ser-dono")
+
+        negocios = listar_negocios()
+        novo_id = max([int(n.get("id", 0)) for n in negocios], default=0) + 1
+
+        negocios.append({
+            "id": novo_id,
+            "tipo": tipo,
+            "nome": nome,
+            "cidade": cidade,
+            "bairro": bairro,
+            "endereco": endereco,
+            "whatsapp": whatsapp
+        })
+
+        salvar_negocios(negocios)
+
+        atualizar_usuario(u["email"], {
+            "tipo": "dono",
+            "negocio_id": novo_id,
+            "assinatura_status": "trial",
+            "trial_ate": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
+            "mp_subscription_id": None,
+            "mp_pix_payment_id": None
+        })
+
+        session["tipo"] = "dono"
+        session["negocio_id"] = novo_id
+
+        flash("Negócio criado! 🎁 Você ganhou 7 dias grátis. Agora escolha o pagamento ✅")
+        return redirect("/assinar")
+
+    return render_template("quero_ser_dono.html")
+
+
+@cliente_bp.route("/agendamento/confirmar/<token>")
+def confirmar_agendamento(token):
+    ag = carregar_json(AGENDAMENTOS_FILE)
+    alvo = next((a for a in ag if a.get("confirmacao_token") == token), None)
+
+    if not alvo:
+        return render_template(
+            "confirmacao_agendamento.html",
+            ok=False,
+            titulo="Link inválido",
+            mensagem="Esse link não foi encontrado ou já expirou.",
+            agendamento=None,
+            negocio=None,
+        )
+
+    alvo["status_confirmacao"] = "confirmado"
+    alvo["confirmado_em"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    salvar_json(AGENDAMENTOS_FILE, ag)
+
+    return render_template(
+        "confirmacao_agendamento.html",
+        ok=True,
+        titulo="Presença confirmada ✅",
+        mensagem="Perfeito! Seu horário continua reservado e o estabelecimento foi informado.",
+        agendamento=alvo,
+        negocio=get_negocio(alvo.get("negocio_id")),
+    )
+
+
+@cliente_bp.route("/agendamento/cancelar/<token>")
+def cancelar_agendamento(token):
+    ag = carregar_json(AGENDAMENTOS_FILE)
+    alvo = next((a for a in ag if a.get("confirmacao_token") == token), None)
+
+    if not alvo:
+        return render_template(
+            "confirmacao_agendamento.html",
+            ok=False,
+            titulo="Link inválido",
+            mensagem="Esse link não foi encontrado ou já expirou.",
+            agendamento=None,
+            negocio=None,
+        )
+
+    alvo["status_confirmacao"] = "cancelado"
+    alvo["cancelado_em"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    salvar_json(AGENDAMENTOS_FILE, ag)
+
+    return render_template(
+        "confirmacao_agendamento.html",
+        ok=True,
+        titulo="Agendamento cancelado",
+        mensagem="Tudo certo. Seu horário foi cancelado e liberado no sistema.",
+        agendamento=alvo,
+        negocio=get_negocio(alvo.get("negocio_id")),
+    )

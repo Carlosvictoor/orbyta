@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Horários</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .grid-horarios{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap:10px;
+      margin-top:10px;
+      text-align:left;
+    }
+    .slot{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      background:#111;
+      padding:8px 10px;
+      border-radius:10px;
+    }
+    .slot input{ width:auto; margin:0; }
+
+    .actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .btn-small{
+      padding:10px 12px;
+      border-radius:10px;
+      border:1px solid rgba(0,200,83,0.35);
+      background:transparent;
+      color:#fff;
+      cursor:pointer;
+    }
+    .btn-small:hover{ opacity:.9; }
+
+    @media (max-width: 520px){
+      .grid-horarios{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Horários do negócio: {{ negocio.nome }}</h2>
+    <p style="opacity:.85; margin-top:-6px;">Vale para <b>TODOS OS DIAS</b> (06:00 → 00:00 de 30 em 30)</p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <p style="color:#00e676; font-weight:bold; margin-bottom:10px;">{{ msg }}</p>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post">
+      <div class="actions">
+        <button type="button" class="btn-small" onclick="marcarTodos()">Marcar todos</button>
+        <button type="button" class="btn-small" onclick="desmarcarTodos()">Desmarcar todos</button>
+        <button type="button" class="btn-small" onclick="marcarHorario('08:00','18:00')">08:00 → 18:00</button>
+        <button type="button" class="btn-small" onclick="marcarHorario('10:00','20:00')">10:00 → 20:00</button>
+      </div>
+
+      <div class="grid-horarios">
+        {% for t in slots %}
+          <label class="slot">
+            <input type="checkbox" name="times" value="{{ t }}"
+              {% if t in selecionados %}checked{% endif %}>
+            <span>{{ t }}</span>
+          </label>
+        {% endfor %}
+      </div>
+
+      <button type="submit" style="margin-top:12px;">Salvar horários (todos os dias)</button>
+    </form>
+
+    <br>
+    <a href="/painel">← Voltar ao painel</a>
+  </div>
+
+<script>
+  function marcarTodos(){
+    document.querySelectorAll('input[name="times"]').forEach(cb => cb.checked = true);
+  }
+  function desmarcarTodos(){
+    document.querySelectorAll('input[name="times"]').forEach(cb => cb.checked = false);
+  }
+  function marcarHorario(inicio, fim){
+    // marca somente o intervalo [inicio, fim)
+    const cbs = document.querySelectorAll('input[name="times"]');
+    cbs.forEach(cb => {
+      const t = cb.value;
+      cb.checked = (t >= inicio && t < fim);
+    });
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Serviços • {{ negocio.nome }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="dash">
+
+  <div class="dash-top">
+    <div class="dash-title">
+      <h1>Serviços</h1>
+      <p>{{ negocio.nome }} • {{ negocio.bairro }} • {{ negocio.cidade }}</p>
+    </div>
+
+    <div class="dash-actions">
+      <a class="link-btn" href="/painel">Painel</a>
+      <a class="link-btn" href="/painel/financeiro">Financeiro</a>
+      <a class="link-btn" href="/painel/profissionais">Profissionais</a>
+      <a class="link-btn" href="/painel/horarios">Horários</a>
+      <a class="link-btn" href="/logout">Sair</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-head">
+      <h2>Categorias dos serviços</h2>
+      <span class="small-muted">Aqui você organiza tudo por tipo: Cabelo, Barba, Unha...</span>
+    </div>
+
+    {% if servicos_agrupados and servicos_agrupados|length > 0 %}
+      <div class="services-accordion">
+        {% for grupo in servicos_agrupados %}
+          <details class="service-accordion" {% if loop.first %}open{% endif %}>
+            <summary>
+              <div>
+                <strong><span class="category-icon">{{ grupo.icone }}</span> {{ grupo.categoria }}</strong>
+                <div class="small-muted">{{ grupo.itens|length }} serviço{% if grupo.itens|length != 1 %}s{% endif %} nesta categoria</div>
+              </div>
+              <span class="accordion-indicator">+</span>
+            </summary>
+
+            <div class="accordion-services-list">
+              {% for s in grupo.itens %}
+                <div class="accordion-service-item active" style="cursor:default;">
+                  <div class="accordion-service-top">
+                    <strong>#{{ s.ordem }} • {{ s.nome }}</strong>
+                    <span class="service-price">R$ {{ s.preco }}</span>
+                  </div>
+                  <div class="small-muted">{{ s.descricao or 'Sem descrição cadastrada.' }}</div>
+                  <div class="accordion-service-meta">{{ s.duracao_min }} min</div>
+                </div>
+              {% endfor %}
+            </div>
+          </details>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="small-muted">Cadastre o primeiro serviço para começar a montar as categorias.</div>
+    {% endif %}
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Novo tipo e serviço</h2>
+        <span class="small-muted">Cadastre por categoria para o accordion do cliente ficar organizado</span>
+      </div>
+
+      <form method="post" action="/painel/servicos/novo">
+        <div style="display:grid; gap:10px;">
+          <input class="input" id="categoriaInput" name="categoria" list="categoriasLista" placeholder="Tipo de serviço (ex: Unha, Cabelo, Barba)" required>
+          <datalist id="categoriasLista">
+            {% for cat in categorias_sugeridas %}
+              <option value="{{ cat }}"></option>
+            {% endfor %}
+          </datalist>
+
+          <div class="category-quick-list">
+            {% for cat in categorias_sugeridas %}
+              <button type="button" class="mini-chip" onclick="setCategoria('categoriaInput', '{{ cat }}')">{{ cat }}</button>
+            {% endfor %}
+          </div>
+
+          <input class="input" name="nome" placeholder="Qual serviço? (ex: Alongamento em gel, Corte social)" required>
+
+          <textarea class="input" name="descricao" placeholder="Descrição do serviço para aparecer no agendamento do cliente"></textarea>
+
+          <div class="two-col" style="margin-top:0;">
+            <input class="input" name="ordem" type="number" min="0" value="0" placeholder="Ordem dentro da categoria">
+            <input class="input" name="duracao" placeholder="Durabilidade / duração (min) ex: 60" required>
+          </div>
+
+          <div class="two-col" style="margin-top:0;">
+            <input class="input" name="preco" placeholder="Valor (ex: 35,00)" required>
+            <input class="input" value="A menor ordem aparece primeiro" readonly>
+          </div>
+
+          <button class="btn primary" type="submit">Cadastrar serviço</button>
+          <div class="small-muted">Exemplo: Tipo <strong>Unha</strong> → Serviço <strong>Banho de gel</strong> → descrição → duração → valor.</div>
+        </div>
+      </form>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Gerenciar serviços</h2>
+        <span class="small-muted">Editar / Desativar</span>
+      </div>
+
+      {% if servs and servs|length > 0 %}
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Serviço</th>
+              <th>Descrição</th>
+              <th>Ordem</th>
+              <th>Duração</th>
+              <th>Valor</th>
+              <th>Status</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for s in servs %}
+            <tr>
+              <td><span class="badge gray">{{ s.categoria or 'Geral' }}</span></td>
+              <td><strong>{{ s.nome }}</strong></td>
+              <td>{{ s.descricao or '—' }}</td>
+              <td>#{{ s.ordem or 0 }}</td>
+              <td>{{ s.duracao_min }} min</td>
+              <td>R$ {{ s.preco }}</td>
+              <td>
+                {% if s.ativo %}
+                  <span class="badge">Ativo</span>
+                {% else %}
+                  <span class="badge red">Inativo</span>
+                {% endif %}
+              </td>
+              <td style="text-align:right; white-space:nowrap;">
+                <button class="link-btn" type="button"
+                        onclick='openEdit({{ {"id": s.id, "categoria": s.categoria or "Geral", "nome": s.nome, "descricao": s.descricao or "", "ordem": s.ordem or 0, "duracao_min": s.duracao_min, "preco": s.preco, "ativo": 1 if s.ativo else 0} | tojson | safe }})'>
+                  Editar
+                </button>
+                {% if s.ativo %}
+                  <a class="link-btn" href="/painel/servicos/desativar/{{ s.id }}">Desativar</a>
+                {% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      {% else %}
+        <div class="small-muted">Você ainda não cadastrou serviços.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Modal editar -->
+  <div id="modal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,.55); padding:18px;">
+    <div class="panel" style="max-width:560px; margin:40px auto;">
+      <div class="panel-head">
+        <h2>Editar serviço</h2>
+        <button class="link-btn" type="button" onclick="closeEdit()">Fechar</button>
+      </div>
+
+      <form method="post" action="/painel/servicos/editar" id="editForm">
+        <input type="hidden" name="id" id="e_id">
+
+        <div style="display:grid; gap:10px;">
+          <input class="input" name="categoria" id="e_categoria" list="categoriasLista" required>
+          <div class="category-quick-list">
+            {% for cat in categorias_sugeridas %}
+              <button type="button" class="mini-chip" onclick="setCategoria('e_categoria', '{{ cat }}')">{{ cat }}</button>
+            {% endfor %}
+          </div>
+          <input class="input" name="nome" id="e_nome" required>
+          <textarea class="input" name="descricao" id="e_descricao" placeholder="Descrição do serviço"></textarea>
+
+          <div class="two-col" style="margin-top:0;">
+            <input class="input" name="ordem" id="e_ordem" type="number" min="0" required>
+            <input class="input" name="duracao" id="e_dur" required>
+          </div>
+
+          <div class="two-col" style="margin-top:0;">
+            <input class="input" name="preco" id="e_preco" required>
+            <input class="input" value="A menor ordem aparece primeiro" readonly>
+          </div>
+
+          <select class="input" name="ativo" id="e_ativo">
+            <option value="1">Ativo</option>
+            <option value="0">Inativo</option>
+          </select>
+
+          <button class="btn primary" type="submit">Salvar alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const modal = document.getElementById("modal");
+
+  function setCategoria(inputId, valor){
+    const el = document.getElementById(inputId);
+    if(el){
+      el.value = valor;
+      el.focus();
+    }
+  }
+
+  function openEdit(payload){
+    document.getElementById("e_id").value = payload.id || "";
+    document.getElementById("e_categoria").value = payload.categoria || "Geral";
+    document.getElementById("e_nome").value = payload.nome || "";
+    document.getElementById("e_descricao").value = payload.descricao || "";
+    document.getElementById("e_ordem").value = payload.ordem ?? 0;
+    document.getElementById("e_dur").value = payload.duracao_min || "30";
+    document.getElementById("e_preco").value = payload.preco || "";
+    document.getElementById("e_ativo").value = String(payload.ativo ?? 1);
+    modal.style.display = "block";
+  }
+  function closeEdit(){
+    modal.style.display = "none";
+  }
+</script>
+
+</body>
+</html>

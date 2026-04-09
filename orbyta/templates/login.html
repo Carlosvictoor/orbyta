@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login • Orbyta</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="auth-center">
+  <div class="card auth-shell">
+    <span class="auth-kicker">Acesso rápido e seguro</span>
+    <h2>Entrar na Orbyta 🪐</h2>
+    <p class="auth-subtitle">
+      Acesse sua conta para acompanhar agendamentos, reservar novos horários e gerenciar tudo com facilidade.
+    </p>
+
+    {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        {% for msg in messages %}
+          <div class="err">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <div class="auth-list">
+      <span class="auth-pill">⚡ Login rápido</span>
+      <span class="auth-pill">📅 Seus horários em um lugar</span>
+      <span class="auth-pill">🔒 Conta protegida</span>
+      <span class="auth-pill">💬 Reagende com facilidade</span>
+    </div>
+
+    <form method="post" action="/login">
+      <input
+        name="email"
+        type="email"
+        placeholder="Seu melhor email"
+        required
+        autocomplete="email"
+      >
+
+      <div class="password-wrap">
+        <input
+          id="senha"
+          name="senha"
+          type="password"
+          placeholder="Sua senha"
+          required
+          class="password-input"
+          autocomplete="current-password"
+        >
+
+        <button
+          type="button"
+          class="password-toggle"
+          onclick="toggleSenha()"
+          aria-label="Mostrar ou ocultar senha">
+          👁
+        </button>
+      </div>
+
+      <button type="submit">Entrar na minha conta</button>
+    </form>
+
+    <div class="auth-footer" style="text-align:center; margin-top:14px;">
+      <span class="muted">Ainda não tem conta?</span><br>
+      <a href="/cadastro">Criar conta grátis</a>
+    </div>
+  </div>
+</div>
+
+<script>
+function toggleSenha() {
+  const campo = document.getElementById("senha");
+  campo.type = campo.type === "password" ? "text" : "password";
+}
+</script>
+
+</body>
+</html>

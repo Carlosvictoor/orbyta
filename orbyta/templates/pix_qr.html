@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Pagamento Pix • Orbyta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="logo">Orbyta 🪐</div>
+  <div class="actions">
+    <a href="/assinar" class="btn outline">Voltar</a>
+    <a href="/logout" class="btn primary">Sair</a>
+  </div>
+</header>
+
+<div class="container page">
+  <h1>Pagamento via Pix</h1>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <p style="opacity:.85;">
+    Valor do plano: <b>R$ {{ "%.2f"|format(valor) }}</b>
+  </p>
+
+  <div class="biz-card" style="max-width:520px; margin-top:20px;">
+
+    {% if qr_base64 %}
+      <img
+        src="data:image/png;base64,{{ qr_base64 }}"
+        alt="QR Code Pix"
+        style="width:100%; border-radius:14px;"
+      >
+    {% endif %}
+
+    {% if qr_code %}
+      <p style="margin-top:16px; opacity:.85;">
+        Pix Copia e Cola:
+      </p>
+
+      <textarea
+        readonly
+        style="
+          width:100%;
+          min-height:120px;
+          border-radius:12px;
+          padding:12px;
+          font-size:13px;
+        "
+      >{{ qr_code }}</textarea>
+    {% endif %}
+
+    <p style="opacity:.75; margin-top:14px;">
+      ⏳ Após o pagamento, sua assinatura será ativada automaticamente.
+      Se demorar alguns minutos, clique em verificar status.
+    </p>
+
+    <div class="biz-actions" style="margin-top:14px;">
+      <a href="/assinatura/status" class="btn primary">Já paguei, verificar agora</a>
+      <a href="/assinar" class="btn outline">Voltar</a>
+    </div>
+  </div>
+
+  <div style="margin-top:26px;">
+    <a href="/painel">Ir para o painel</a>
+  </div>
+</div>
+
+</body>
+</html>

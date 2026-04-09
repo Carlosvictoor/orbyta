@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ titulo }} • Orbyta</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <div class="auth-center">
+    <div class="card auth-shell">
+      <span class="auth-kicker">Confirmação de presença</span>
+      <h2>{{ titulo }}</h2>
+      <p class="auth-subtitle">{{ mensagem }}</p>
+
+      {% if agendamento %}
+        <div class="summary-row">
+          <div class="summary-card">
+            <span class="muted">Data</span>
+            <strong style="font-size:18px;">{{ agendamento.data }}</strong>
+          </div>
+          <div class="summary-card">
+            <span class="muted">Horário</span>
+            <strong style="font-size:18px;">{{ agendamento.horario }}</strong>
+          </div>
+          <div class="summary-card">
+            <span class="muted">Profissional</span>
+            <strong style="font-size:18px;">{{ agendamento.barbeiro or '—' }}</strong>
+          </div>
+        </div>
+      {% endif %}
+
+      <div class="hero-actions" style="justify-content:flex-start; margin-top:14px;">
+        <a href="/" class="btn outline">Ir para o início</a>
+        {% if negocio %}
+          <a href="/agenda/{{ negocio.id }}" class="btn primary">Agendar novamente</a>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</body>
+</html>

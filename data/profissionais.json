@@ -1,0 +1,9 @@
+[
+    {
+        "id": 1,
+        "negocio_id": 2,
+        "nome": "CARLOS",
+        "categoria": "barbeiro",
+        "comissao_pct": 60.0
+    }
+]

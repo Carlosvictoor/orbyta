@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard • {{ negocio.nome }}</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<div class="dash">
+
+  <div class="dash-top">
+    <div class="dash-title">
+      <h1>Dashboard</h1>
+      <p>{{ negocio.nome }} • {{ negocio.bairro }} • {{ negocio.cidade }}</p>
+    </div>
+
+    <div class="dash-actions">
+      <a class="link-btn" href="/painel/servicos">Serviços</a>
+      <a class="link-btn" href="/painel/financeiro">Financeiro</a>
+      <a class="link-btn" href="/painel/profissionais">Profissionais</a>
+      <a class="link-btn" href="/painel/horarios">Horários</a>
+      <a class="link-btn" href="/logout">Sair</a>
+    </div>
+  </div>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <div class="flash">{{ msg }}</div>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="kpis">
+    <div class="kpi">
+      <div class="label">Agendamentos recentes</div>
+      <div class="value">{{ ag|length }}</div>
+      <div class="hint">Últimos registros exibidos</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Hoje</div>
+      <div class="value">{{ hoje_qtd }}</div>
+      <div class="hint">Atendimentos marcados para hoje</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Faturamento do mês</div>
+      <div class="value">R$ {{ faturamento_mes }}</div>
+      <div class="hint">Calculado pelos serviços agendados</div>
+    </div>
+
+    <div class="kpi">
+      <div class="label">Clientes únicos</div>
+      <div class="value">{{ clientes_unicos }}</div>
+      <div class="hint">Clientes atendidos no negócio</div>
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>🏆 Ranking do mês</h2>
+        <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+          {% if ranking_reset_em %}
+            <span class="small-muted">Zerado em {{ ranking_reset_em }}</span>
+          {% else %}
+            <span class="small-muted">Profissionais que mais faturaram</span>
+          {% endif %}
+          <a class="link-btn" href="/painel/ranking/zerar">Zerar ranking</a>
+        </div>
+      </div>
+
+      {% if ranking and ranking|length > 0 %}
+        <ul class="list">
+          {% for r in ranking %}
+            <li>
+              <strong>{{ loop.index }}º {{ r.nome }}</strong><br>
+              <span class="small-muted">
+                R$ {{ r.valor }} • {{ r.qtd }} atendimento{% if r.qtd != 1 %}s{% endif %}
+              </span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="small-muted">Ainda não há dados suficientes para gerar o ranking deste mês.</div>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>📅 Próximos atendimentos</h2>
+        <span class="small-muted">Agenda de hoje</span>
+      </div>
+
+      {% if proximos and proximos|length > 0 %}
+        <ul class="list">
+          {% for p in proximos %}
+            <li>
+              <strong>{{ p.horario }}</strong> • {{ p.nome }}<br>
+              <span class="small-muted">{{ p.servico }} • {{ p.barbeiro }}</span>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <div class="small-muted">Nenhum atendimento agendado para hoje.</div>
+      {% endif %}
+    </div>
+  </div>
+
+  <div class="two-col">
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Horário de funcionamento</h2>
+        <a class="link-btn" href="/painel/horarios">Editar</a>
+      </div>
+
+      {% if horarios_funcionamento and horarios_funcionamento[0].times %}
+        <ul class="list">
+          <li>
+            <strong>{{ horarios_funcionamento[0].dia }}:</strong>
+            <span class="small-muted">
+              {{ horarios_funcionamento[0].times[0] }} às {{ horarios_funcionamento[0].times[-1] }}
+            </span>
+          </li>
+        </ul>
+      {% else %}
+        <div class="small-muted">Você ainda não configurou os horários de funcionamento.</div>
+      {% endif %}
+    </div>
+
+    <div class="panel">
+      <div class="panel-head">
+        <h2>Atalhos rápidos</h2>
+        <span class="small-muted">Ações principais do sistema</span>
+      </div>
+
+      <ul class="list">
+        <li><a class="link-btn" href="/painel/servicos">Cadastrar serviços</a></li>
+        <li><a class="link-btn" href="/painel/profissionais">Cadastrar profissionais</a></li>
+        <li><a class="link-btn" href="/painel/horarios">Definir horários</a></li>
+        <li><a class="link-btn" href="/painel/financeiro">Abrir financeiro</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>🚀 Status para publicar</h2>
+      <span class="small-muted">Checklist rápido do que já está pronto</span>
+    </div>
+
+    <div class="summary-row" style="margin-top:0;">
+      {% for item in integracoes %}
+        <div class="summary-card">
+          <span class="muted">{{ item.nome }}</span>
+          <strong style="font-size:18px;">{{ 'OK' if item.ok else 'Pendente' }}</strong>
+          <div class="small-muted" style="margin-top:8px;">{{ item.detalhe }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>WhatsApp automático</h2>
+      <span class="small-muted">Lembrete enviado 45 minutos antes do atendimento</span>
+    </div>
+
+    <form method="post" action="/painel/config-whatsapp">
+      <label class="auth-pill" style="cursor:pointer; margin-bottom:12px; display:inline-flex;">
+        <input type="checkbox" name="whatsapp_lembrete_ativo" {% if negocio.get('whatsapp_lembrete_ativo', True) %}checked{% endif %} style="width:auto; margin:0;">
+        Ativar envio automático no WhatsApp
+      </label>
+
+      <div class="two-col" style="margin-top:0;">
+        <input class="input" name="whatsapp_numero_envio" placeholder="WhatsApp do estabelecimento (com DDD)" value="{{ negocio.get('whatsapp_numero_envio', negocio.get('whatsapp', '')) }}">
+        <input class="input" name="whatsapp_numero_teste" placeholder="Número para enviar um teste agora">
+      </div>
+
+      <textarea name="whatsapp_mensagem_template" class="input" rows="6" style="min-height:140px; resize:vertical;">{{ negocio.get('whatsapp_mensagem_template', 'Olá {nome}! Aqui é da {negocio}. Seu atendimento está marcado para {data} às {horario} com {profissional} ({servico}). Fale conosco em {whatsapp_dono}.\n\n✅ Confirmar: {link_confirmar}\n❌ Cancelar: {link_cancelar}') }}</textarea>
+
+      <p class="small-muted">
+        Você pode usar: <code>{nome}</code>, <code>{negocio}</code>, <code>{data}</code>, <code>{horario}</code>,
+        <code>{servico}</code>, <code>{profissional}</code>, <code>{whatsapp_dono}</code>, <code>{link_confirmar}</code> e <code>{link_cancelar}</code>.
+      </p>
+
+      <div class="biz-actions" style="margin-top:12px;">
+        <button type="submit">Salvar mensagem automática</button>
+        <button type="submit" formaction="/painel/whatsapp/teste" formmethod="post" class="link-btn">Enviar teste</button>
+      </div>
+    </form>
+  </div>
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>Agendamentos recentes</h2>
+      <div class="filters">
+        <input class="input" id="q" placeholder="Buscar por cliente / serviço / profissional">
+      </div>
+    </div>
+
+    {% if ag and ag|length > 0 %}
+      <table class="table" id="tbl">
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Hora</th>
+            <th>Cliente</th>
+            <th>Telefone</th>
+            <th>Serviço</th>
+            <th>Profissional</th>
+            <th>Confirmação</th>
+            <th>Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for a in ag %}
+          <tr>
+            {% set ag_id = a.get('id') or (a.get('data','') ~ '|' ~ a.get('horario','') ~ '|' ~ a.get('nome','') ~ '|' ~ a.get('barbeiro','')) %}
+            <td>{{ a.data }}</td>
+            <td><span class="badge">{{ a.horario }}</span></td>
+            <td>{{ a.nome }}</td>
+            <td>{{ a.telefone or '—' }}</td>
+            <td>{{ a.servico or "—" }}</td>
+            <td>{{ a.barbeiro or "—" }}</td>
+            <td>
+              {% if a.status_confirmacao == 'confirmado' %}
+                <span class="badge">Confirmado</span>
+              {% elif a.status_confirmacao == 'cancelado' %}
+                <span class="badge red">Cancelado</span>
+              {% elif a.status_confirmacao == 'sem_whatsapp' %}
+                <span class="badge gray">Sem WhatsApp</span>
+              {% else %}
+                <span class="badge gray">Pendente</span>
+              {% endif %}
+            </td>
+            <td style="white-space:nowrap;">
+              <a class="link-btn" href="/painel/agendamentos/cancelar/{{ ag_id|urlencode }}">Cancelar</a>
+              <a class="link-btn" href="/painel/agendamentos/excluir/{{ ag_id|urlencode }}">Excluir</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <div class="small-muted">Ainda não há agendamentos cadastrados.</div>
+    {% endif %}
+  </div>
+
+</div>
+
+<script>
+  const q = document.getElementById("q");
+  const tbl = document.getElementById("tbl");
+
+  if (q && tbl) {
+    q.addEventListener("input", () => {
+      const term = q.value.toLowerCase().trim();
+      tbl.querySelectorAll("tbody tr").forEach(tr => {
+        const txt = tr.innerText.toLowerCase();
+        tr.style.display = txt.includes(term) ? "" : "none";
+      });
+    });
+  }
+</script>
+
+</body>
+</html>

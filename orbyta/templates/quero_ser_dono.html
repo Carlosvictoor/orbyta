@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Criar meu negócio • Orbyta</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="navbar">
+  <div class="logo">Orbyta 🪐</div>
+  <div class="actions">
+    <a href="/" class="btn outline">Início</a>
+    <a href="/logout" class="btn primary">Sair</a>
+  </div>
+</header>
+
+<div class="container page">
+  <h1>Criar meu negócio</h1>
+  <p style="opacity:.85;">
+    Preencha os dados abaixo e comece com <b>7 dias grátis</b>.
+  </p>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p style="color:#00e676; font-weight:bold;">{{ msg }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="biz-card" style="max-width:520px;">
+    <form method="post" action="/quero-ser-dono">
+
+      <label style="display:block; margin-top:10px; opacity:.9;">Tipo</label>
+      <select name="tipo" required>
+        <option value="">Selecione</option>
+        <option value="barbearias">Barbearia</option>
+        <option value="saloes">Salão de beleza</option>
+        <option value="clinicas">Clínica de estética</option>
+        <option value="studios">Studio</option>
+      </select>
+
+      <input name="nome" placeholder="Nome do negócio" required>
+      <input name="cidade" placeholder="Cidade" required>
+      <input name="bairro" placeholder="Bairro" required>
+      <input name="endereco" placeholder="Endereço" required>
+      <input name="whatsapp" placeholder="WhatsApp (só números, ex: 13999999999)" required>
+
+      <button type="submit">Criar e começar 7 dias grátis</button>
+    </form>
+  </div>
+
+  <div style="margin-top:25px;">
+    <a href="/planos">← Voltar para Planos</a>
+  </div>
+</div>
+
+</body>
+</html>

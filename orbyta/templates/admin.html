@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <style>
+    .row-actions{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:12px;
+    }
+    .btn-danger{
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid #ff5252;
+      color:#ff5252;
+      text-decoration:none;
+      font-weight:600;
+    }
+    .btn-danger:hover{ opacity:.9; }
+
+    .btn-warn{
+      display:inline-block;
+      padding:10px 14px;
+      border-radius:12px;
+      border:1px solid #ffb300;
+      color:#ffb300;
+      text-decoration:none;
+      font-weight:600;
+    }
+    .btn-warn:hover{ opacity:.9; }
+  </style>
+</head>
+<body>
+<div class="container page">
+  <h1>Painel Admin (Plataforma)</h1>
+
+  {% with messages = get_flashed_messages() %}
+    {% if messages %}
+      {% for msg in messages %}
+        <p style="color:#00e676; font-weight:bold;">{{ msg }}</p>
+      {% endfor %}
+    {% endif %}
+  {% endwith %}
+
+  <div class="biz-actions" style="margin: 18px 0;">
+    <a class="btn outline" href="/logout">Sair</a>
+  </div>
+
+  <!-- =======================
+       CRIAR NEGÓCIO
+  ======================== -->
+  <h2>Criar Negócio</h2>
+
+  <div class="biz-card" style="max-width:720px;">
+    <form method="post" action="/admin/criar_negocio">
+      <label style="display:block; opacity:.9;">Tipo</label>
+      <select name="tipo" required>
+        <option value="">Selecione</option>
+        <option value="saloes">Salões de Beleza</option>
+        <option value="barbearias">Barbearias</option>
+        <option value="clinicas">Clínicas de Estética</option>
+        <option value="studios">Studios</option>
+      </select>
+
+      <input name="nome" placeholder="Nome do negócio" required>
+      <input name="cidade" placeholder="Cidade" required>
+      <input name="bairro" placeholder="Bairro" required>
+      <input name="endereco" placeholder="Endereço" required>
+      <input name="whatsapp" placeholder="WhatsApp (somente números)" required>
+
+      <button type="submit">Criar Negócio</button>
+    </form>
+  </div>
+
+  <!-- =======================
+       NEGÓCIOS CADASTRADOS
+  ======================== -->
+  <h2 style="margin-top:30px;">Negócios cadastrados</h2>
+
+  {% if negocios|length == 0 %}
+    <p style="opacity:.8;">Nenhum negócio cadastrado ainda.</p>
+  {% endif %}
+
+  <div class="grid">
+    {% for n in negocios %}
+      <div class="biz-card">
+        <h3>{{ n.nome }}</h3>
+        <p>{{ n.bairro }} • {{ n.cidade }}</p>
+        <p style="opacity:.8;">ID: {{ n.id }} • Tipo: {{ n.tipo }}</p>
+        {% if n.whatsapp %}
+          <p style="opacity:.8;">WhatsApp: {{ n.whatsapp }}</p>
+        {% endif %}
+
+        <div class="row-actions">
+          <a class="btn outline" href="/loja/{{ n.id }}">Ver loja</a>
+
+          <!-- ✅ EXCLUIR NEGÓCIO -->
+          <a class="btn-danger"
+             href="/admin/excluir_negocio/{{ n.id }}"
+             onclick="return confirm('Tem certeza que deseja EXCLUIR esse negócio?\\n\\nIsso vai apagar também: profissionais, serviços, horários e agendamentos desse negócio.');">
+             Excluir negócio
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <!-- =======================
+       CRIAR DONO
+  ======================== -->
+  <h2 style="margin-top:30px;">Criar DONO (cliente que comprou)</h2>
+
+  <div class="biz-card" style="max-width:720px;">
+    <form method="post" action="/admin/criar_dono">
+      <input name="email" type="email" placeholder="Email do dono" required>
+      <input name="senha" type="text" placeholder="Senha do dono" required>
+
+      <label style="display:block; margin-top:10px; opacity:.9;">Vincular ao negócio</label>
+      <select name="negocio_id" required>
+        <option value="">Selecione</option>
+        {% for n in negocios %}
+          <option value="{{ n.id }}">{{ n.id }} - {{ n.nome }}</option>
+        {% endfor %}
+      </select>
+
+      <button type="submit">Criar dono</button>
+    </form>
+  </div>
+
+  <!-- =======================
+       DONOS JÁ CRIADOS
+  ======================== -->
+  <h2 style="margin-top:30px;">Donos já criados</h2>
+
+  {% if donos|length == 0 %}
+    <p style="opacity:.8;">Nenhum dono criado ainda.</p>
+  {% endif %}
+
+  <div class="grid">
+    {% for d in donos %}
+      <div class="biz-card">
+        <h3 style="margin:0 0 6px;">{{ d.email }}</h3>
+        <p style="opacity:.85;">negocio_id: {{ d.negocio_id }}</p>
+
+        <div class="row-actions">
+          <!-- ✅ EXCLUIR DONO -->
+          <a class="btn-warn"
+             href="/admin/excluir_dono/{{ d.email|urlencode }}"
+             onclick="return confirm('Tem certeza que deseja EXCLUIR o dono: {{ d.email }} ?');">
+             Excluir dono
+          </a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+</div>
+</body>
+</html>
