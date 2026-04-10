@@ -21,6 +21,7 @@
       <li class="dropdown">
         <button class="dropbtn">Negócios ▾</button>
         <div class="dropdown-content">
+          <a href="/negocios">Ver todas as categorias</a>
           <a href="/negocios/saloes">Salões de Beleza</a>
           <a href="/negocios/barbearias">Barbearias</a>
           <a href="/negocios/clinicas">Clínicas de Estética</a>
@@ -70,7 +71,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="/negocios/barbearias" class="btn primary">Agendar agora</a>
+    <a href="/negocios" class="btn primary">Agendar agora</a>
     {% if not session.get("usuario") %}
       <a href="/cadastro" class="btn outline">Criar conta grátis</a>
     {% else %}

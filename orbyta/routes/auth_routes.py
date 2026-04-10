@@ -104,7 +104,7 @@ def login():
                 if u.get("tipo") == "funcionario":
                     return redirect("/painel-funcionario")
                 if u.get("tipo") == "cliente":
-                    return redirect("/cliente")
+                    return redirect("/negocios")
 
                 return redirect("/")
 

@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Negócios • Orbyta</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container page">
+  <div class="page-hero">
+    <div>
+      <span class="page-kicker">Escolha onde agendar</span>
+      <h1>Encontre o tipo de negócio ideal para você</h1>
+      <p class="page-subtitle">
+        Selecione a categoria desejada e veja os estabelecimentos disponíveis para agendar online com rapidez.
+      </p>
+    </div>
+
+    <div class="hero-actions">
+      <a href="/" class="btn outline">← Voltar ao início</a>
+    </div>
+  </div>
+
+  <div class="search-card" style="text-align:left;">
+    <div class="results-meta">
+      Hoje a Orbyta reúne <strong>{{ total }}</strong> negócio(s) cadastrado(s) entre salão, barbearia, studio e clínica de estética.
+    </div>
+  </div>
+
+  <div class="feature-grid" style="margin-top:18px;">
+    {% for item in categorias %}
+      <div class="feature-card" style="text-align:left; display:flex; flex-direction:column; gap:10px;">
+        <div style="font-size:34px;">{{ item.icone }}</div>
+        <h3 style="margin:0;">{{ item.titulo }}</h3>
+        <p class="muted" style="margin:0;">{{ item.descricao }}</p>
+
+        <div class="biz-meta" style="margin-top:4px;">
+          <span class="chip">{{ item.total }} negócio(s)</span>
+        </div>
+
+        <div class="biz-actions" style="margin-top:auto;">
+          <a class="btn primary" href="/negocios/{{ item.tipo }}">Ver {{ item.titulo }}</a>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
+
+  <div class="empty-state" style="margin-top:24px;">
+    <strong>Dica rápida:</strong>
+    <p class="muted">Depois de escolher a categoria, você poderá abrir a loja do estabelecimento e seguir para o agendamento.</p>
+  </div>
+</div>
+</body>
+</html>

@@ -17,6 +17,42 @@ def planos():
     return render_template("planos.html")
 
 
+@publicas_bp.route("/negocios")
+def negocios_inicio():
+    negocios = listar_negocios()
+    categorias = [
+        {
+            "tipo": "saloes",
+            "titulo": "Salões de Beleza",
+            "icone": "💇‍♀️",
+            "descricao": "Cabelos, unhas, maquiagem e cuidados para o dia a dia ou ocasiões especiais.",
+        },
+        {
+            "tipo": "barbearias",
+            "titulo": "Barbearias",
+            "icone": "💈",
+            "descricao": "Corte, barba, acabamento e atendimento rápido com estilo.",
+        },
+        {
+            "tipo": "studios",
+            "titulo": "Studios",
+            "icone": "✨",
+            "descricao": "Studios de design, nail, sobrancelha e atendimentos especializados.",
+        },
+        {
+            "tipo": "clinicas",
+            "titulo": "Clínicas de Estética",
+            "icone": "🧴",
+            "descricao": "Tratamentos, estética facial e corporal com mais organização no agendamento.",
+        },
+    ]
+
+    for item in categorias:
+        item["total"] = sum(1 for n in negocios if n.get("tipo") == item["tipo"])
+
+    return render_template("negocios_inicio.html", categorias=categorias, total=len(negocios))
+
+
 @publicas_bp.route("/negocios/<tipo>")
 def listar_negocios_route(tipo):
     q = request.args.get("q", "").strip().lower()
