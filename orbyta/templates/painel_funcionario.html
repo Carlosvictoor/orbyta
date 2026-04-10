@@ -67,6 +67,49 @@
     </div>
   </div>
 
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-head">
+      <h2>Marcar cliente manualmente</h2>
+      <span class="small-muted">Reserve um horário você mesmo, sem depender do cliente</span>
+    </div>
+
+    {% if servs and horarios_configurados %}
+      <form method="post" action="/painel-funcionario/agendar-manual?mes={{ mes }}">
+        <div class="two-col" style="margin-top:0;">
+          <input class="input" name="nome" placeholder="Nome do cliente" required>
+          <input class="input" name="telefone" placeholder="WhatsApp do cliente (opcional)">
+        </div>
+
+        <div class="two-col">
+          <select class="input" name="servico_id" required>
+            <option value="">Selecione o serviço</option>
+            {% for s in servs %}
+              <option value="{{ s.id }}">{{ s.nome }} {% if s.preco %}• R$ {{ s.preco }}{% endif %}</option>
+            {% endfor %}
+          </select>
+
+          <select class="input" name="horario" required>
+            <option value="">Selecione o horário</option>
+            {% for h in horarios_configurados %}
+              <option value="{{ h }}">{{ h }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="two-col">
+          <input class="input" type="date" name="data" value="{{ data_hoje }}" required>
+          <div class="small-muted" style="display:flex; align-items:center; padding:12px 4px;">
+            O sistema só salva se o horário estiver realmente livre para você.
+          </div>
+        </div>
+
+        <button class="btn primary" type="submit" style="width:100%; margin-top:10px;">Salvar agendamento manual</button>
+      </form>
+    {% else %}
+      <div class="small-muted">Peça ao dono para cadastrar serviços e horários antes de usar essa função.</div>
+    {% endif %}
+  </div>
+
   <div class="panel">
     <div class="panel-head">
       <h2>Mês</h2>

@@ -1,17 +1,19 @@
+import uuid
 from datetime import datetime
 from flask import Blueprint, render_template, request, redirect, flash, current_app
 
 from core.auth import exigir_funcionario, usuario_atual
 from core.constants import AGENDAMENTOS_FILE, FINANCEIRO_FILE
-from core.json_db import carregar_json
+from core.json_db import carregar_json, salvar_json
 
 from core.helpers import clamp_pct, salvar_imagem_upload
 from services.negocios_service import get_negocio
 from services.profissionais_service import get_profissional, listar_profissionais, salvar_profissionais
-from services.servicos_service import servico_preco, servico_nome_by_id
+from services.servicos_service import servico_preco, servico_nome_by_id, servicos_do_negocio
+from services.horarios_service import obter_horarios_disponiveis, obter_horarios_globais
 from services.profissionais_service import comissao_pct_profissional
 from services.financeiro_service import calcular_valores_comissao
-from services.whatsapp_service import normalizar_telefone_e164
+from services.whatsapp_service import normalizar_telefone_e164, telefone_valido_br
 
 funcionario_bp = Blueprint("funcionario", __name__)
 
@@ -43,6 +45,10 @@ def painel_funcionario():
     if not negocio or not profissional:
         flash("Funcionário ou negócio não encontrado.")
         return redirect("/logout")
+
+    servs = servicos_do_negocio(negocio_id)
+    horarios_configurados = obter_horarios_globais(negocio_id)
+    data_hoje = datetime.now().strftime("%Y-%m-%d")
 
     mes = request.args.get("mes", "").strip()
     if not mes:
@@ -133,8 +139,90 @@ def painel_funcionario():
         parte_salao=round(parte_salao, 2),
         saidas=round(saidas, 2),
         saldo_final=round(saldo_final, 2),
-        qtd_atendimentos=len(meus_agendamentos)
+        qtd_atendimentos=len(meus_agendamentos),
+        servs=servs,
+        horarios_configurados=horarios_configurados,
+        data_hoje=data_hoje,
     )
+
+
+@funcionario_bp.route("/painel-funcionario/agendar-manual", methods=["POST"])
+def painel_funcionario_agendar_manual():
+    if not exigir_funcionario():
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u:
+        return redirect("/login")
+
+    negocio_id = int(u.get("negocio_id") or 0)
+    profissional_id = int(u.get("profissional_id") or 0)
+    if not negocio_id or not profissional_id:
+        flash("Sua conta de funcionário não está vinculada corretamente.")
+        return redirect("/logout")
+
+    profissional = get_profissional(profissional_id)
+    if not profissional or int(profissional.get("negocio_id", 0)) != negocio_id:
+        flash("Profissional não encontrado.")
+        return redirect("/logout")
+
+    nome = request.form.get("nome", "").strip()
+    telefone = request.form.get("telefone", "").strip()
+    data = request.form.get("data", "").strip()
+    horario = request.form.get("horario", "").strip()
+    servico_id = request.form.get("servico_id", "").strip()
+    mes = request.args.get("mes", "").strip() or (data[:7] if data else datetime.now().strftime("%Y-%m"))
+
+    if not nome:
+        flash("Informe o nome do cliente.")
+        return redirect(f"/painel-funcionario?mes={mes}")
+
+    if telefone and not telefone_valido_br(telefone):
+        flash("Informe um telefone/WhatsApp válido com DDD ou deixe em branco.")
+        return redirect(f"/painel-funcionario?mes={mes}")
+
+    try:
+        datetime.strptime(data, "%Y-%m-%d")
+    except Exception:
+        flash("Data inválida.")
+        return redirect(f"/painel-funcionario?mes={mes}")
+
+    if not servico_id.isdigit():
+        flash("Selecione um serviço válido.")
+        return redirect(f"/painel-funcionario?mes={mes}")
+
+    horarios_livres = obter_horarios_disponiveis(negocio_id, profissional.get("nome", ""), data, int(servico_id))
+    if horario not in horarios_livres:
+        flash("Esse horário não está disponível para você. Escolha outro horário.")
+        return redirect(f"/painel-funcionario?mes={mes}")
+
+    ag = carregar_json(AGENDAMENTOS_FILE)
+    novo_id = max([int(a.get("id", 0) or 0) for a in ag], default=0) + 1
+    servico_nome = servico_nome_by_id(negocio_id, int(servico_id)) or "Serviço"
+
+    ag.append({
+        "id": novo_id,
+        "negocio_id": negocio_id,
+        "nome": nome,
+        "cliente": "",
+        "telefone": telefone,
+        "data": data,
+        "horario": horario,
+        "barbeiro": profissional.get("nome", "Profissional"),
+        "profissional_id": profissional_id,
+        "servico_id": int(servico_id),
+        "servico": servico_nome,
+        "status_confirmacao": "pendente" if telefone else "sem_whatsapp",
+        "confirmacao_token": uuid.uuid4().hex,
+        "lembrete_whatsapp_status": "aguardando" if telefone else "não configurado",
+        "origem": "manual_funcionario",
+        "criado_por": u.get("email") or u.get("usuario") or "funcionario",
+        "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    })
+    salvar_json(AGENDAMENTOS_FILE, ag)
+
+    flash(f"Agendamento manual salvo ✅ {nome} • {data} às {horario}")
+    return redirect(f"/painel-funcionario?mes={mes}")
 
 
 @funcionario_bp.route("/painel-funcionario/perfil", methods=["POST"])
