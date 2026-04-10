@@ -203,6 +203,57 @@
 
   <div class="panel" style="margin-top:12px;">
     <div class="panel-head">
+      <h2>Marcar cliente manualmente</h2>
+      <span class="small-muted">O dono também pode reservar horários direto do painel</span>
+    </div>
+
+    {% if profs and servs and horarios_configurados %}
+      <form method="post" action="/painel/agendar-manual">
+        <div class="two-col" style="margin-top:0;">
+          <input class="input" name="nome" placeholder="Nome do cliente" required>
+          <input class="input" name="telefone" placeholder="WhatsApp do cliente (opcional)">
+        </div>
+
+        <div class="two-col">
+          <select class="input" name="profissional_id" required>
+            <option value="">Selecione o profissional</option>
+            {% for p in profs %}
+              <option value="{{ p.id }}">{{ p.nome }} • {{ p.categoria }}</option>
+            {% endfor %}
+          </select>
+
+          <select class="input" name="servico_id" required>
+            <option value="">Selecione o serviço</option>
+            {% for s in servs %}
+              <option value="{{ s.id }}">{{ s.nome }} {% if s.preco %}• R$ {{ s.preco }}{% endif %}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="two-col">
+          <input class="input" type="date" name="data" value="{{ data_hoje }}" required>
+
+          <select class="input" name="horario" required>
+            <option value="">Selecione o horário</option>
+            {% for h in horarios_configurados %}
+              <option value="{{ h }}">{{ h }}</option>
+            {% endfor %}
+          </select>
+        </div>
+
+        <div class="small-muted" style="margin-top:8px;">
+          O sistema confirma apenas se o horário estiver livre para o profissional escolhido.
+        </div>
+
+        <button class="btn primary" type="submit" style="width:100%; margin-top:10px;">Salvar agendamento manual</button>
+      </form>
+    {% else %}
+      <div class="small-muted">Cadastre profissionais, serviços e horários para liberar essa função.</div>
+    {% endif %}
+  </div>
+
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
       <h2>🚀 Status para publicar</h2>
       <span class="small-muted">Checklist rápido do que já está pronto</span>
     </div>

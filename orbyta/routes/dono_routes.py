@@ -24,8 +24,9 @@ from services.servicos_service import (
     servico_nome_by_id,
     categorias_sugeridas,
     agrupar_servicos_por_categoria,
+    servicos_do_negocio,
 )
-from services.horarios_service import obter_horarios_globais, salvar_horarios_globais
+from services.horarios_service import obter_horarios_globais, salvar_horarios_globais, obter_horarios_disponiveis
 from services.financeiro_service import (
     financeiro_do_negocio,
     salvar_lancamento_financeiro,
@@ -77,6 +78,8 @@ def painel():
 
     times = obter_horarios_globais(negocio_id)
     horarios_funcionamento = [{"dia": "Todos os dias", "times": times}] if times else []
+    profs = profissionais_do_negocio(negocio_id)
+    servs = servicos_do_negocio(negocio_id)
 
     hoje = datetime.now().strftime("%Y-%m-%d")
     mes_atual = datetime.now().strftime("%Y-%m")
@@ -204,7 +207,90 @@ def painel():
         proximos=proximos,
         ranking_reset_em=reset_em,
         integracoes=integracoes,
+        profs=profs,
+        servs=servs,
+        horarios_configurados=times,
+        data_hoje=hoje,
     )
+
+
+@dono_bp.route("/painel/agendar-manual", methods=["POST"])
+def painel_agendar_manual():
+    if not exigir_dono():
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u or not exigir_assinatura_dono():
+        flash("Assine para acessar esta área ✅")
+        return redirect("/assinar")
+
+    negocio_id = int(session.get("negocio_id") or 0)
+    nome = request.form.get("nome", "").strip()
+    telefone = request.form.get("telefone", "").strip()
+    data = request.form.get("data", "").strip()
+    horario = request.form.get("horario", "").strip()
+    servico_id = request.form.get("servico_id", "").strip()
+    profissional_id = request.form.get("profissional_id", "").strip()
+
+    if not nome:
+        flash("Informe o nome do cliente.")
+        return redirect("/painel")
+
+    if telefone and not telefone_valido_br(telefone):
+        flash("Informe um telefone/WhatsApp válido com DDD ou deixe em branco.")
+        return redirect("/painel")
+
+    try:
+        datetime.strptime(data, "%Y-%m-%d")
+    except Exception:
+        flash("Data inválida.")
+        return redirect("/painel")
+
+    if not servico_id.isdigit():
+        flash("Selecione um serviço válido.")
+        return redirect("/painel")
+
+    if not profissional_id.isdigit():
+        flash("Selecione um profissional válido.")
+        return redirect("/painel")
+
+    profissional = get_profissional(int(profissional_id))
+    if not profissional or int(profissional.get("negocio_id", 0)) != negocio_id:
+        flash("Profissional não encontrado.")
+        return redirect("/painel")
+
+    horarios_livres = obter_horarios_disponiveis(negocio_id, profissional.get("nome", ""), data, int(servico_id))
+    if horario not in horarios_livres:
+        flash("Esse horário não está disponível para o profissional escolhido.")
+        return redirect("/painel")
+
+    ag = carregar_json(AGENDAMENTOS_FILE)
+    novo_id = max([int(a.get("id", 0) or 0) for a in ag], default=0) + 1
+    servico_nome = servico_nome_by_id(negocio_id, int(servico_id)) or "Serviço"
+
+    ag.append({
+        "id": novo_id,
+        "negocio_id": negocio_id,
+        "nome": nome,
+        "cliente": "",
+        "telefone": telefone,
+        "data": data,
+        "horario": horario,
+        "barbeiro": profissional.get("nome", "Profissional"),
+        "profissional_id": int(profissional_id),
+        "servico_id": int(servico_id),
+        "servico": servico_nome,
+        "status_confirmacao": "pendente" if telefone else "sem_whatsapp",
+        "confirmacao_token": uuid.uuid4().hex,
+        "lembrete_whatsapp_status": "aguardando" if telefone else "não configurado",
+        "origem": "manual_dono",
+        "criado_por": u.get("email") or "dono",
+        "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+    })
+    salvar_json(AGENDAMENTOS_FILE, ag)
+
+    flash(f"Agendamento manual salvo ✅ {nome} • {profissional.get('nome')} • {data} às {horario}")
+    return redirect("/painel")
 
 
 @dono_bp.route("/painel/agendamentos/excluir/<path:ag_id>")
