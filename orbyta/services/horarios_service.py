@@ -1,8 +1,8 @@
 from core.constants import HORARIOS_FILE, AGENDAMENTOS_FILE
 from core.json_db import carregar_json, salvar_json
 from core.helpers import SLOTS_PADRAO_30
-from services.profissionais_service import get_profissional_por_nome
-from services.servicos_service import servico_duracao_min
+from services.profissionais_service import get_profissional_por_nome, profissional_atende_servico
+from services.servicos_service import servico_duracao_min, get_servico
 
 
 def obter_horarios_globais(negocio_id):
@@ -43,6 +43,10 @@ def obter_horarios_disponiveis(negocio_id, barbeiro, data, servico_id=None):
 
     profissional = get_profissional_por_nome(negocio_id, barbeiro)
     profissional_id = int(profissional.get("id", 0)) if profissional else 0
+    servico = get_servico(negocio_id, int(servico_id or 0)) if servico_id else None
+    if profissional and servico and not profissional_atende_servico(profissional, servico):
+        return []
+
     duracao_solicitada = servico_duracao_min(negocio_id, int(servico_id or 0))
 
     ag = carregar_json(AGENDAMENTOS_FILE)

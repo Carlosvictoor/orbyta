@@ -60,6 +60,36 @@
 
         <p class="small-muted" style="margin-top:0;">{{ p.descricao or 'Sem descrição cadastrada ainda.' }}</p>
 
+        <div style="display:flex; flex-wrap:wrap; gap:8px; margin:10px 0 12px;">
+          {% for area in p.categorias_servico or [] %}
+            <span class="chip">{{ area }}</span>
+          {% else %}
+            <span class="chip">Todas as áreas</span>
+          {% endfor %}
+        </div>
+
+        <div class="panel" style="padding:14px; margin-bottom:12px;">
+          <div class="panel-head" style="margin-bottom:8px;">
+            <h2 style="font-size:16px;">Áreas que atende</h2>
+          </div>
+
+          {% if categorias_servicos %}
+            <form method="post" action="/painel/profissionais/areas/{{ p.id }}">
+              <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(130px, 1fr)); gap:8px; margin-bottom:10px;">
+                {% for area in categorias_servicos %}
+                  <label class="small-muted" style="display:flex; gap:8px; align-items:center; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:8px 10px;">
+                    <input type="checkbox" name="categorias_servico" value="{{ area }}" {% if area in (p.categorias_servico or []) %}checked{% endif %} style="width:auto; margin:0;">
+                    {{ area }}
+                  </label>
+                {% endfor %}
+              </div>
+              <button class="btn primary" type="submit" style="width:100%;">Salvar áreas</button>
+            </form>
+          {% else %}
+            <div class="small-muted">Cadastre os serviços do negócio para liberar a seleção por área.</div>
+          {% endif %}
+        </div>
+
         <div class="panel" style="padding:14px; margin-bottom:12px;">
           <div class="panel-head" style="margin-bottom:8px;">
             <h2 style="font-size:16px;">Foto e descrição</h2>

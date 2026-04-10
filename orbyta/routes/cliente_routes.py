@@ -9,8 +9,8 @@ from core.helpers import SLOTS_PADRAO_30
 from core.json_db import carregar_json, salvar_json
 
 from services.negocios_service import get_negocio, listar_negocios, salvar_negocios
-from services.profissionais_service import profissionais_do_negocio, get_profissional_por_nome
-from services.servicos_service import servicos_do_negocio, agrupar_servicos_por_categoria
+from services.profissionais_service import profissionais_do_negocio, get_profissional_por_nome, profissional_atende_servico
+from services.servicos_service import servicos_do_negocio, agrupar_servicos_por_categoria, get_servico
 from services.horarios_service import obter_horarios_disponiveis, obter_horarios_globais
 from services.usuarios_service import atualizar_usuario
 from services.whatsapp_service import telefone_valido_br
@@ -90,11 +90,15 @@ def agenda(negocio_id):
         if not servico_id.isdigit():
             return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Selecione um serviço válido.")
 
+        servico_escolhido = get_servico(negocio_id, int(servico_id))
+        profissional = get_profissional_por_nome(negocio_id, barbeiro)
+        if profissional and servico_escolhido and not profissional_atende_servico(profissional, servico_escolhido):
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse profissional não atende essa área/serviço.")
+
         livres = obter_horarios_disponiveis(negocio_id, barbeiro, data, int(servico_id))
         if horario not in livres:
             return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse horário não está disponível para esse barbeiro ou já foi reservado.")
 
-        profissional = get_profissional_por_nome(negocio_id, barbeiro)
         profissional_id = int(profissional.get("id", 0)) if profissional else None
 
         ag = carregar_json(AGENDAMENTOS_FILE)

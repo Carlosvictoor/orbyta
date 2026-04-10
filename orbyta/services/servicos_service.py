@@ -154,6 +154,14 @@ def servico_nome_by_id(negocio_id: int, servico_id: int) -> str:
     return ""
 
 
+def get_servico(negocio_id: int, servico_id: int):
+    servs = listar_servicos()
+    for s in servs:
+        if int(s.get("negocio_id", 0)) == int(negocio_id) and int(s.get("id", 0)) == int(servico_id):
+            return s
+    return None
+
+
 def servico_duracao_min(negocio_id: int, servico_id: int) -> int:
     servs = listar_servicos()
     for s in servs:

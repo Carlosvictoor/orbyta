@@ -60,6 +60,7 @@
                 type="button"
                 class="service-card"
                 data-service-id="{{ s.id }}"
+                data-category="{{ s.categoria or 'Geral' }}"
                 style="text-align:left; padding:16px; border-radius:14px; border:1px solid rgba(255,255,255,.10); background:rgba(255,255,255,.03);"
               >
                 <div style="font-size:15px; font-weight:800; color:#fff;">{{ s.nome }}</div>
@@ -86,7 +87,7 @@
 
                 <div class="accordion-services-list">
                   {% for s in grupo.itens %}
-                    <button type="button" class="accordion-service-item" data-service-id="{{ s.id }}">
+                    <button type="button" class="accordion-service-item" data-service-id="{{ s.id }}" data-category="{{ s.categoria or 'Geral' }}">
                       <div class="accordion-service-top">
                         <strong>{{ s.nome }}</strong>
                         {% if s.preco %}<span class="service-price">R$ {{ s.preco }}</span>{% endif %}
@@ -103,7 +104,7 @@
           <select id="servico_id" style="display:none;">
             <option value="">Selecione um serviço</option>
             {% for s in servs %}
-              <option value="{{ s.id }}" {% if (servico_preselecionado|string) == (s.id|string) %}selected{% endif %}>
+              <option value="{{ s.id }}" data-category="{{ s.categoria or 'Geral' }}" {% if (servico_preselecionado|string) == (s.id|string) %}selected{% endif %}>
                 {{ s.categoria or 'Geral' }} • {{ s.nome }} {% if s.preco %}- R$ {{ s.preco }}{% endif %}
               </option>
             {% endfor %}
@@ -119,6 +120,7 @@
               <div
                 class="profissional"
                 data-name="{{ p.nome }}"
+                data-categorias="{{ (p.categorias_servico or [])|join('|') }}"
                 style="
                   width:100%;
                   max-width:340px;
@@ -190,6 +192,7 @@
               </div>
             {% endfor %}
           </div>
+          <div id="emptyProfissionais" class="small-muted" style="display:none; margin-top:10px;">Nenhum profissional disponível para essa área no momento.</div>
         </div>
 
         <div class="agenda-step" id="stepData">
@@ -284,6 +287,8 @@
   const summaryProfissional = document.getElementById("summaryProfissional");
   const summaryData = document.getElementById("summaryData");
   const summaryHorario = document.getElementById("summaryHorario");
+  const profissionais = Array.from(document.querySelectorAll(".profissional"));
+  const emptyProfissionais = document.getElementById("emptyProfissionais");
 
   const chipServico = document.getElementById("chipServico");
   const chipProfissional = document.getElementById("chipProfissional");
@@ -323,12 +328,53 @@
     });
   }
 
+  function categoriaServicoSelecionado(){
+    const opt = servicoSelect.options[servicoSelect.selectedIndex];
+    return String(opt?.dataset?.category || "").trim().toLowerCase();
+  }
+
+  function filtrarProfissionaisPorServico(){
+    const categoria = categoriaServicoSelecionado();
+    let visiveis = 0;
+
+    profissionais.forEach(p => {
+      const categorias = String(p.dataset.categorias || "")
+        .split("|")
+        .map(item => item.trim().toLowerCase())
+        .filter(Boolean);
+
+      const podeAtender = !categoria || !categorias.length || categorias.includes(categoria);
+      p.style.display = podeAtender ? "" : "none";
+
+      if (podeAtender) {
+        visiveis += 1;
+      } else if (selectedBarbeiro === p.dataset.name) {
+        p.classList.remove("active");
+        p.style.border = "1px solid rgba(255,255,255,.14)";
+        p.style.boxShadow = "none";
+        selectedBarbeiro = "";
+        barbeiroInput.value = "";
+      }
+    });
+
+    if (emptyProfissionais) {
+      emptyProfissionais.style.display = visiveis ? "none" : "block";
+    }
+
+    if (!visiveis) {
+      clearSlots("Nenhum profissional disponível para essa área.");
+    } else {
+      updateButton();
+    }
+  }
+
   function escolherServico(serviceId, scrollToStep = true){
     selectedServicoId = String(serviceId || "");
     servicoSelect.value = selectedServicoId;
     servicoInput.value = selectedServicoId;
     selectedHorario = "";
     horarioInput.value = "";
+    filtrarProfissionaisPorServico();
     updateButton();
 
     if(scrollToStep){
@@ -526,9 +572,13 @@
     }
   }
 
-  document.querySelectorAll(".profissional").forEach(p=>{
+  profissionais.forEach(p=>{
     p.onclick = ()=>{
-      document.querySelectorAll(".profissional").forEach(x=>{
+      if (p.style.display === "none") {
+        return;
+      }
+
+      profissionais.forEach(x=>{
         x.classList.remove("active");
         x.style.border = "1px solid rgba(255,255,255,.14)";
         x.style.boxShadow = "none";
@@ -588,6 +638,7 @@
   dataInput.value = toISO(selectedDate);
   renderDays();
   clearSlots("Selecione serviço + profissional + dia para ver horários.");
+  filtrarProfissionaisPorServico();
   updateSummary();
 </script>
 

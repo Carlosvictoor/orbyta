@@ -76,6 +76,25 @@
         style="width:90%; margin:10px auto 0; display:block;"
       >
 
+      {% if categorias_servicos %}
+        <label style="display:block; text-align:left; width:90%; margin:14px auto 6px; opacity:.9;">
+          Áreas que esse profissional atende
+        </label>
+
+        <div style="width:90%; margin:0 auto 8px; display:grid; grid-template-columns:repeat(auto-fit, minmax(120px, 1fr)); gap:8px; text-align:left;">
+          {% for area in categorias_servicos %}
+            <label style="display:flex; gap:8px; align-items:center; border:1px solid rgba(255,255,255,.08); border-radius:10px; padding:8px 10px;">
+              <input type="checkbox" name="categorias_servico" value="{{ area }}" style="width:auto; margin:0;">
+              <span>{{ area }}</span>
+            </label>
+          {% endfor %}
+        </div>
+
+        <div style="width:90%; margin:8px auto 0; font-size:13px; opacity:.75; text-align:left;">
+          Se nada for marcado, o sistema usa a categoria principal do profissional como padrão.
+        </div>
+      {% endif %}
+
       <label style="display:block; text-align:left; width:90%; margin:14px auto 6px; opacity:.9;">
         Descrição rápida
       </label>

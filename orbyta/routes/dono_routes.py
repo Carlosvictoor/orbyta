@@ -16,6 +16,8 @@ from services.profissionais_service import (
     get_profissional,
     listar_profissionais,
     salvar_profissionais,
+    categorias_servico_profissional,
+    profissional_atende_servico,
 )
 from services.servicos_service import (
     listar_servicos,
@@ -41,6 +43,24 @@ dono_bp = Blueprint("dono", __name__)
 def _whatsapp_link(telefone: str) -> str:
     numero = normalizar_telefone_e164(telefone or "")
     return f"https://wa.me/{numero}" if numero else ""
+
+
+def _categorias_servicos_negocio(servs):
+    sugestoes = categorias_sugeridas() + ["Barba", "Sobrancelha", "Depilação", "Massagem", "Maquiagem", "Geral"]
+    lista = []
+    vistos = set()
+
+    for categoria in sugestoes + [str(s.get("categoria") or "").strip() for s in (servs or [])]:
+        nome = " ".join(str(categoria or "").strip().split())
+        if not nome:
+            continue
+        chave = nome.lower()
+        if chave in vistos:
+            continue
+        vistos.add(chave)
+        lista.append(nome)
+
+    return lista
 
 
 @dono_bp.route("/painel")
@@ -257,6 +277,11 @@ def painel_agendar_manual():
     profissional = get_profissional(int(profissional_id))
     if not profissional or int(profissional.get("negocio_id", 0)) != negocio_id:
         flash("Profissional não encontrado.")
+        return redirect("/painel")
+
+    servico_escolhido = next((s for s in servicos_do_negocio(negocio_id) if int(s.get("id", 0)) == int(servico_id)), None)
+    if servico_escolhido and not profissional_atende_servico(profissional, servico_escolhido):
+        flash("Esse profissional não atende essa área/serviço.")
         return redirect("/painel")
 
     horarios_livres = obter_horarios_disponiveis(negocio_id, profissional.get("nome", ""), data, int(servico_id))
@@ -884,6 +909,7 @@ def painel_profissionais():
 
     negocio = get_negocio(negocio_id)
     profs = profissionais_do_negocio(negocio_id)
+    categorias_servicos = _categorias_servicos_negocio(servicos_do_negocio(int(negocio_id)))
 
     usuarios = carregar_json(USUARIOS_FILE)
     mapa_acessos = {}
@@ -896,8 +922,9 @@ def painel_profissionais():
     for p in profs:
         p["login_funcionario"] = mapa_acessos.get(int(p.get("id", 0)))
         p["comissao_pct"] = clamp_pct(p.get("comissao_pct", 50), 50)
+        p["categorias_servico"] = categorias_servico_profissional(p)
 
-    return render_template("painel_profissionais.html", negocio=negocio, profs=profs)
+    return render_template("painel_profissionais.html", negocio=negocio, profs=profs, categorias_servicos=categorias_servicos)
 
 
 @dono_bp.route("/painel/profissionais/novo", methods=["GET", "POST"])
@@ -916,12 +943,14 @@ def painel_profissionais_novo():
         return redirect("/painel")
 
     negocio = get_negocio(negocio_id)
+    categorias_servicos = _categorias_servicos_negocio(servicos_do_negocio(int(negocio_id)))
 
     if request.method == "POST":
         nome = request.form["nome"].strip()
         categoria = request.form.get("categoria", "").strip().lower()
         descricao = request.form.get("descricao", "").strip()
         foto_url = request.form.get("foto_url", "").strip()
+        categorias_servico = [c.strip() for c in request.form.getlist("categorias_servico") if c.strip()]
         comissao_pct = clamp_pct(request.form.get("comissao_pct", 50), 50)
 
         if not nome:
@@ -951,6 +980,7 @@ def painel_profissionais_novo():
             "categoria": categoria,
             "descricao": descricao,
             "foto": foto_upload or foto_url,
+            "categorias_servico": categorias_servico,
             "comissao_pct": comissao_pct
         })
 
@@ -958,7 +988,7 @@ def painel_profissionais_novo():
         flash("Profissional cadastrado com sucesso! ✅")
         return redirect("/painel/profissionais")
 
-    return render_template("painel_profissionais_novo.html", negocio=negocio)
+    return render_template("painel_profissionais_novo.html", negocio=negocio, categorias_servicos=categorias_servicos)
 
 
 @dono_bp.route("/painel/profissionais/perfil/<int:prof_id>", methods=["POST"])
@@ -1001,6 +1031,32 @@ def atualizar_perfil_profissional(prof_id):
 
     salvar_profissionais(profs)
     flash("Perfil do profissional atualizado ✅" if ok else "Profissional não encontrado.")
+    return redirect("/painel/profissionais")
+
+
+@dono_bp.route("/painel/profissionais/areas/<int:prof_id>", methods=["POST"])
+def atualizar_areas_profissional(prof_id):
+    if not exigir_dono():
+        return redirect("/login")
+
+    u = usuario_atual()
+    if not u or not exigir_assinatura_dono():
+        flash("Assine para acessar esta área ✅")
+        return redirect("/assinar")
+
+    negocio_id = int(session.get("negocio_id") or 0)
+    categorias_servico = [c.strip() for c in request.form.getlist("categorias_servico") if c.strip()]
+
+    profs = listar_profissionais()
+    ok = False
+    for p in profs:
+        if int(p.get("id", 0)) == int(prof_id) and int(p.get("negocio_id", 0)) == negocio_id:
+            p["categorias_servico"] = categorias_servico
+            ok = True
+            break
+
+    salvar_profissionais(profs)
+    flash("Áreas de atendimento atualizadas ✅" if ok else "Profissional não encontrado.")
     return redirect("/painel/profissionais")
 
 

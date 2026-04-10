@@ -8,7 +8,7 @@ from core.json_db import carregar_json, salvar_json
 
 from core.helpers import clamp_pct, salvar_imagem_upload
 from services.negocios_service import get_negocio
-from services.profissionais_service import get_profissional, listar_profissionais, salvar_profissionais
+from services.profissionais_service import get_profissional, listar_profissionais, salvar_profissionais, profissional_atende_servico
 from services.servicos_service import servico_preco, servico_nome_by_id, servicos_do_negocio
 from services.horarios_service import obter_horarios_disponiveis, obter_horarios_globais
 from services.profissionais_service import comissao_pct_profissional
@@ -46,7 +46,7 @@ def painel_funcionario():
         flash("Funcionário ou negócio não encontrado.")
         return redirect("/logout")
 
-    servs = servicos_do_negocio(negocio_id)
+    servs = [s for s in servicos_do_negocio(negocio_id) if profissional_atende_servico(profissional, s)]
     horarios_configurados = obter_horarios_globais(negocio_id)
     data_hoje = datetime.now().strftime("%Y-%m-%d")
 
