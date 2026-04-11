@@ -253,18 +253,16 @@ def confirmar_agendamento(token):
             negocio=None,
         )
 
+    ja_estava_confirmado = (alvo.get("status_confirmacao") or "").strip().lower() == "confirmado"
     alvo["status_confirmacao"] = "confirmado"
     alvo["confirmado_em"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     salvar_json(AGENDAMENTOS_FILE, ag)
 
-    return render_template(
-        "confirmacao_agendamento.html",
-        ok=True,
-        titulo="Presença confirmada ✅",
-        mensagem="Perfeito! Seu horário continua reservado e o estabelecimento foi informado.",
-        agendamento=alvo,
-        negocio=get_negocio(alvo.get("negocio_id")),
-    )
+    if ja_estava_confirmado:
+        flash("Seu agendamento já estava confirmado ✅")
+    else:
+        flash("Agendamento confirmado com sucesso ✅")
+    return redirect("/")
 
 
 @cliente_bp.route("/agendamento/cancelar/<token>")

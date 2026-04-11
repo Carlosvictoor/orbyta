@@ -43,9 +43,9 @@ def process_due_reminders():
         token = (item.get("confirmacao_token") or "").strip()
         status = (item.get("status_confirmacao") or "").strip().lower()
 
-        if not telefone or not token:
+        if not telefone:
             continue
-        if status in {"confirmado", "cancelado"}:
+        if status == "cancelado":
             continue
         if item.get("lembrete_whatsapp_enviado_em"):
             continue

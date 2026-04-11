@@ -6,10 +6,8 @@ import requests
 
 DEFAULT_REMINDER_TEMPLATE = (
     "Olá {nome}! Aqui é da {negocio}. "
-    "Seu atendimento está marcado para {data} às {horario} com {profissional} "
-    "({servico}). Você consegue confirmar sua presença?\n\n"
-    "✅ Confirmar: {link_confirmar}\n"
-    "❌ Cancelar: {link_cancelar}"
+    "Faltam cerca de 45 minutos para o seu atendimento de {servico} em {data} às {horario} com {profissional}. "
+    "Se precisar falar com a loja, chame em {whatsapp_dono}."
 )
 
 
@@ -60,8 +58,9 @@ def renderizar_template_lembrete(template: str, agendamento: dict, negocio: dict
     token = agendamento.get("confirmacao_token") or ""
     mensagem_base = (template or "").strip() or DEFAULT_REMINDER_TEMPLATE
     whatsapp_dono = numero_whatsapp_negocio(negocio)
+    ja_confirmado = (agendamento.get("status_confirmacao") or "").strip().lower() == "confirmado"
 
-    if "{link_confirmar}" not in mensagem_base and "{link_cancelar}" not in mensagem_base:
+    if not ja_confirmado and "{link_confirmar}" not in mensagem_base and "{link_cancelar}" not in mensagem_base:
         mensagem_base += "\n\n✅ Confirmar: {link_confirmar}\n❌ Cancelar: {link_cancelar}"
 
     valores = _SafeDict({
