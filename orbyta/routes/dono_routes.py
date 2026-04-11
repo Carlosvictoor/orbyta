@@ -510,6 +510,16 @@ def painel_whatsapp_teste():
         f"Teste do WhatsApp da {negocio.get('nome', 'Orbyta')} ✅\n"
         f"Se você recebeu esta mensagem, a configuração principal está pronta para produção."
     )
+
+    whatsapp_provider = (os.getenv("WHATSAPP_PROVIDER", "none") or "none").strip().lower()
+    if whatsapp_provider in {"", "none"}:
+        link_manual = gerar_link_whatsapp(numero_destino, mensagem)
+        if link_manual:
+            flash("Abrindo WhatsApp Web com a mensagem de teste pronta ✅")
+            return redirect(link_manual)
+        flash("Não foi possível montar o link manual do WhatsApp.")
+        return redirect("/painel")
+
     ok, detalhe = send_whatsapp_message(numero_destino, mensagem, negocio=negocio)
     flash("Mensagem de teste enviada ✅" if ok else f"Falha no teste do WhatsApp: {detalhe}")
     return redirect("/painel")
