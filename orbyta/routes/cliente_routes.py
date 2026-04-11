@@ -68,7 +68,8 @@ def agenda(negocio_id):
     servs = servicos_do_negocio(negocio_id)
     servicos_categoria = agrupar_servicos_por_categoria(servs)
 
-    horarios_configurados = bool(obter_horarios_globais(negocio_id))
+    horarios_lista = obter_horarios_globais(negocio_id)
+    horarios_configurados = bool(horarios_lista)
     servico_preselecionado = request.values.get("servico_id", "").strip()
 
     if request.method == "POST":
@@ -80,24 +81,24 @@ def agenda(negocio_id):
         servico_id = request.form["servico_id"].strip()
 
         if not servs or not profs:
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse estabelecimento ainda não cadastrou serviços e profissionais para liberar a agenda.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Esse estabelecimento ainda não cadastrou serviços e profissionais para liberar a agenda.")
         if not horarios_configurados:
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="O dono do estabelecimento ainda não configurou os horários de atendimento.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="O dono do estabelecimento ainda não configurou os horários de atendimento.")
         if telefone and not telefone_valido_br(telefone):
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Informe um número de WhatsApp válido com DDD.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Informe um número de WhatsApp válido com DDD.")
         if horario not in SLOTS_PADRAO_30:
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Horário inválido.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Horário inválido.")
         if not servico_id.isdigit():
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Selecione um serviço válido.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Selecione um serviço válido.")
 
         servico_escolhido = get_servico(negocio_id, int(servico_id))
         profissional = get_profissional_por_nome(negocio_id, barbeiro)
         if profissional and servico_escolhido and not profissional_atende_servico(profissional, servico_escolhido):
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse profissional não atende essa área/serviço.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Esse profissional não atende essa área/serviço.")
 
         livres = obter_horarios_disponiveis(negocio_id, barbeiro, data, int(servico_id))
         if horario not in livres:
-            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Esse horário não está disponível para esse barbeiro ou já foi reservado.")
+            return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Esse horário não está disponível para esse barbeiro ou já foi reservado.")
 
         profissional_id = int(profissional.get("id", 0)) if profissional else None
 
@@ -120,7 +121,7 @@ def agenda(negocio_id):
                 and a.get("horario") == horario
                 and mesma_pessoa
             ):
-                return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, telefone_padrao=telefone, erro="Horário já ocupado para esse barbeiro!")
+                return render_template("agenda.html", negocio=negocio, profs=profs, servs=servs, servicos_categoria=servicos_categoria, servico_preselecionado=servico_preselecionado, horarios_configurados=horarios_configurados, horarios_lista=horarios_lista, telefone_padrao=telefone, erro="Horário já ocupado para esse barbeiro!")
 
         servico_nome = ""
         for s in carregar_json(SERVICOS_FILE):
@@ -169,6 +170,7 @@ def agenda(negocio_id):
         telefone_padrao=u.get("telefone", ""),
         servico_preselecionado=servico_preselecionado,
         horarios_configurados=horarios_configurados,
+        horarios_lista=horarios_lista,
     )
 
 @cliente_bp.route("/quero-ser-dono", methods=["GET", "POST"])

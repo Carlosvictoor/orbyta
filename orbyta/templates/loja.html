@@ -194,8 +194,12 @@
         <div class="info-row">
           <div>
             {% if horarios and horarios|length > 0 %}
-              <strong>Domingo:</strong> {{ horarios[0] }} às {{ horarios[-1] }}<br>
-              <strong>Segunda-Feira a Sábado:</strong> {{ horarios[0] }} às {{ horarios[-1] }}
+              <strong>Horários disponíveis para agendamento:</strong>
+              <div style="display:flex; flex-wrap:wrap; gap:8px; margin-top:10px;">
+                {% for h in horarios %}
+                  <span class="chip">{{ h }}</span>
+                {% endfor %}
+              </div>
             {% else %}
               Horários ainda não configurados.
             {% endif %}

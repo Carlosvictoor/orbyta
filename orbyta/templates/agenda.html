@@ -36,6 +36,20 @@
       <div class="err">{{ erro }}</div>
     {% endif %}
 
+    {% if horarios_lista and horarios_lista|length > 0 %}
+      <div class="panel" style="margin-bottom:16px;">
+        <div class="panel-head">
+          <h2 style="font-size:16px;">Horários disponíveis do estabelecimento</h2>
+          <span class="small-muted">Definidos pelo dono da loja</span>
+        </div>
+        <div style="display:flex; flex-wrap:wrap; gap:8px;">
+          {% for h in horarios_lista %}
+            <span class="chip">{{ h }}</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% endif %}
+
     {% if servs|length == 0 or profs|length == 0 %}
       <div class="err">Este estabelecimento ainda não liberou agendamento online: falta cadastrar pelo menos 1 serviço e 1 profissional no painel.</div>
     {% elif not horarios_configurados %}
