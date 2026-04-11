@@ -49,10 +49,10 @@ MP_API = "https://api.mercadopago.com"
 PLANO_PADRAO = "pro"
 PLANOS_CONFIG = {
     "solo": {
-        "nome": "Solo",
-        "valor": 19.99,
+        "nome": "Orbyta Solo",
+        "valor": 14.99,
         "limite_funcionarios": 1,
-        "descricao": "Ideal para quem quer operar com até 1 funcionário.",
+        "descricao": "Perfeito para autônomos e pequenos negócios com até 1 funcionário.",
     },
     "pro": {
         "nome": "Orbyta Pro",

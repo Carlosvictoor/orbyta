@@ -50,14 +50,14 @@
     <div class="plan-card">
       <div class="plan-badge">Novo</div>
 
-      <h2>Solo</h2>
+      <h2>Orbyta Solo</h2>
       <p class="plan-desc">
         Perfeito para quem está começando e quer gerenciar o negócio com até 1 funcionário.
       </p>
 
       <div class="price">
         <span class="price-currency">R$</span>
-        <span class="price-value">19,99</span>
+        <span class="price-value">14,99</span>
         <span class="price-period">/mês</span>
       </div>
 
@@ -76,7 +76,7 @@
 
       <div class="plan-actions">
         {% if session.get("usuario") and session.get("tipo") == "dono" %}
-          <a class="btn primary" href="/assinar?plano=solo">Escolher Solo</a>
+          <a class="btn primary" href="/assinar?plano=solo">Escolher Orbyta Solo</a>
         {% elif session.get("usuario") and session.get("tipo") == "admin" %}
           <a class="btn primary" href="/admin">Acessar admin</a>
         {% elif session.get("usuario") %}
@@ -157,13 +157,13 @@
       </ul>
 
       <div class="plan-actions">
-        <a class="btn outline" href="https://wa.me/55SEUWHATSAPP" target="_blank" rel="noopener noreferrer">
+        <a class="btn outline" href="https://wa.me/5513981865074?text=Ol%C3%A1%2C%20quero%20saber%20mais%20sobre%20os%20planos%20da%20Orbyta" target="_blank" rel="noopener noreferrer">
           Falar no WhatsApp
         </a>
       </div>
 
       <p class="plan-note">
-        Troque <b>55SEUWHATSAPP</b> pelo seu número (só números).
+        Suporte Orbyta: <b>(13) 98186-5074</b>
       </p>
     </div>
   </div>

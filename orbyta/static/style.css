@@ -1030,6 +1030,17 @@ input, select, textarea{
   color: #fff;
 }
 
+select{
+  color-scheme: dark;
+}
+
+select option,
+select optgroup,
+datalist option{
+  background: #0f1c2e;
+  color: #ffffff;
+}
+
 textarea{
   width: 100%;
   min-height: 96px;
@@ -1419,4 +1430,102 @@ button{
   .page-hero{ align-items:flex-start; }
   .agenda-top{ flex-direction:column; align-items:flex-start; }
   .accordion-service-top{ flex-direction:column; }
+}
+
+@media (max-width: 768px){
+  .navbar{
+    padding:12px 14px;
+    gap:10px;
+  }
+
+  .menu{
+    width:100%;
+    order:3;
+  }
+
+  .menu ul{
+    flex-direction:column;
+    align-items:stretch;
+    gap:6px;
+  }
+
+  .menu a,
+  .dropbtn{
+    width:100%;
+    text-align:left;
+    justify-content:flex-start;
+  }
+
+  .dropdown-content{
+    position:static;
+    top:auto;
+    left:auto;
+    width:100%;
+    margin-top:8px;
+  }
+
+  .actions{
+    width:100%;
+    margin-left:0;
+  }
+
+  .actions .btn,
+  .hero-actions .btn,
+  .plan-actions .btn,
+  .plan-actions .link-btn,
+  .biz-actions .btn,
+  .biz-actions .link-btn{
+    width:100%;
+  }
+
+  .container,
+  .page,
+  .dash,
+  .agenda-container{
+    margin-top:180px !important;
+    padding-left:12px;
+    padding-right:12px;
+  }
+
+  .table{
+    display:block;
+    overflow-x:auto;
+    white-space:nowrap;
+  }
+
+  .grid,
+  .plans-grid,
+  .faq-grid,
+  .feature-grid,
+  .summary-row,
+  .hero-stat-row,
+  .profissionais-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+@media (max-width: 480px){
+  .card,
+  .panel,
+  .biz-card,
+  .plan-card,
+  .agenda-card,
+  .kpi{
+    padding:14px;
+    border-radius:14px;
+  }
+
+  .home-hero h1{
+    font-size:clamp(28px, 8vw, 36px);
+  }
+
+  .price-value{
+    font-size:36px;
+  }
+
+  button,
+  .btn,
+  .link-btn{
+    width:100%;
+  }
 }

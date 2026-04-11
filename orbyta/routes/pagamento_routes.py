@@ -107,8 +107,18 @@ def assinar():
 
     u = usuario_atual()
     plano_query = (request.args.get("plano") or "").strip().lower()
-    if u and plano_query in PLANOS_CONFIG:
-        plano_tmp = obter_plano_config(plano_query)
+    plano_atual_usuario = ((u or {}).get("plano_slug") or PLANO_PADRAO).strip().lower()
+    slug_desejado = plano_query if plano_query in PLANOS_CONFIG else plano_atual_usuario
+    plano_tmp = obter_plano_config(slug_desejado)
+
+    precisa_salvar_plano = bool(u) and (
+        plano_atual_usuario != plano_tmp["slug"]
+        or (u or {}).get("plano_nome") != plano_tmp["nome"]
+        or (u or {}).get("valor_plano") != plano_tmp["valor"]
+        or (u or {}).get("limite_funcionarios") != plano_tmp.get("limite_funcionarios")
+    )
+
+    if precisa_salvar_plano:
         atualizar_usuario(
             u["email"],
             {
@@ -118,6 +128,12 @@ def assinar():
                 "valor_plano": plano_tmp["valor"],
             },
         )
+        if plano_query in PLANOS_CONFIG and plano_query != plano_atual_usuario:
+            flash(f"Plano {plano_tmp['nome']} salvo automaticamente ✅")
+        u = usuario_atual() or u
+
+    if u and MP_ACCESS_TOKEN and (u.get("mp_pix_payment_id") or u.get("mp_subscription_id")) and (u.get("assinatura_status") or "").lower() != "ativa":
+        _consultar_status_no_mp(u)
         u = usuario_atual() or u
 
     plano_atual = _plano_escolhido(u)

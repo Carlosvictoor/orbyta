@@ -57,8 +57,14 @@ def cadastro():
         })
         salvar_usuarios(usuarios)
 
-        flash("Cadastro realizado!")
-        return redirect("/login")
+        session.clear()
+        session["usuario"] = email
+        session["tipo"] = "cliente"
+        session["negocio_id"] = None
+        session["profissional_id"] = None
+
+        flash("Conta criada e salva automaticamente ✅")
+        return redirect("/negocios")
 
     return render_template("cadastro.html")
 
