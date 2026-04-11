@@ -46,5 +46,28 @@ MP_WEBHOOK_SECRET = os.getenv("MP_WEBHOOK_SECRET", "").strip()
 MP_STATEMENT_DESCRIPTOR = os.getenv("MP_STATEMENT_DESCRIPTOR", "ORBYTA").strip()
 MP_API = "https://api.mercadopago.com"
 
-PLANO_VALOR = 29.99
+PLANO_PADRAO = "pro"
+PLANOS_CONFIG = {
+    "solo": {
+        "nome": "Solo",
+        "valor": 19.99,
+        "limite_funcionarios": 1,
+        "descricao": "Ideal para quem quer operar com até 1 funcionário.",
+    },
+    "pro": {
+        "nome": "Orbyta Pro",
+        "valor": 29.99,
+        "limite_funcionarios": None,
+        "descricao": "Para negócios com equipe e crescimento sem limite de funcionários.",
+    },
+}
+
+PLANO_VALOR = PLANOS_CONFIG[PLANO_PADRAO]["valor"]
 PLANO_MOEDA = "BRL"
+
+
+def obter_plano_config(slug=None):
+    chave = str(slug or PLANO_PADRAO).strip().lower()
+    plano = dict(PLANOS_CONFIG.get(chave, PLANOS_CONFIG[PLANO_PADRAO]))
+    plano["slug"] = chave if chave in PLANOS_CONFIG else PLANO_PADRAO
+    return plano

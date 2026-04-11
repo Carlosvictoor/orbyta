@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>Assinar • Orbyta</title>
+  <title>🪐 Assinar • Orbyta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="stylesheet" href="/static/style.css">
@@ -18,7 +18,7 @@
 </header>
 
 <div class="container page">
-  <h1>Assinar Orbyta Pro</h1>
+  <h1>Escolha seu plano Orbyta</h1>
 
   {% with messages = get_flashed_messages() %}
     {% if messages %}
@@ -40,6 +40,10 @@
       <strong style="font-size:18px;">{{ (u.get('assinatura_status') or 'não iniciado')|capitalize }}</strong>
     </div>
     <div class="summary-card">
+      <span class="muted">Plano selecionado</span>
+      <strong style="font-size:18px;">{{ plano_atual.nome }}</strong>
+    </div>
+    <div class="summary-card">
       <span class="muted">Mercado Pago</span>
       <strong style="font-size:18px;">{{ 'Configurado' if token_configurado else 'Pendente' }}</strong>
     </div>
@@ -49,43 +53,51 @@
     <div class="err">Configure `MP_ACCESS_TOKEN` e `APP_BASE_URL` no `.env` antes de publicar o pagamento em produção.</div>
   {% endif %}
 
-  <div class="grid" style="margin-top:24px;">
-    <div class="biz-card">
-      <h3>Plano Orbyta Pro</h3>
+  <div class="grid" style="margin-top:24px; gap:16px;">
+    {% for plano in planos %}
+      <div class="biz-card" style="border:{% if plano.slug == plano_atual.slug %}1px solid rgba(123,44,191,.55){% else %}1px solid rgba(255,255,255,.08){% endif %};">
+        <h3>{{ plano.nome }}</h3>
 
-      <p style="font-size:22px; margin:8px 0;">
-        <b>R$ {{ "%.2f"|format(valor) }}</b> / mês
-      </p>
+        <p style="font-size:22px; margin:8px 0;">
+          <b>R$ {{ "%.2f"|format(plano.valor) }}</b> / mês
+        </p>
 
-      <ul style="opacity:.85; padding-left:18px;">
-        <li>Agenda online ilimitada</li>
-        <li>Cadastro de profissionais</li>
-        <li>Painel do negócio</li>
-        <li>Clientes agendam sozinhos</li>
-        <li>Suporte Orbyta</li>
-      </ul>
+        <p style="opacity:.85; margin-top:-4px;">{{ plano.descricao }}</p>
 
-      <p style="opacity:.8; margin-top:10px;">
-        Cancele quando quiser.
-      </p>
+        <ul style="opacity:.85; padding-left:18px;">
+          <li>Agenda online</li>
+          <li>Painel do negócio</li>
+          <li>Clientes agendam sozinhos</li>
+          <li>Suporte Orbyta</li>
+          <li>{% if plano.limite_funcionarios %}Até {{ plano.limite_funcionarios }} funcionário{% else %}Funcionários ilimitados{% endif %}</li>
+        </ul>
 
-      <div class="biz-actions" style="margin-top:16px;">
-        <a href="/assinar/cartao" class="btn primary">
-          💳 Cartão recorrente
-        </a>
-        <a href="/assinar/pix" class="btn outline">
-          ⚡ Pagar com Pix
-        </a>
-        <a href="/assinatura/status" class="link-btn">
-          🔄 Verificar pagamento
-        </a>
+        <p style="opacity:.8; margin-top:10px;">
+          Cancele quando quiser.
+        </p>
+
+        <div class="biz-actions" style="margin-top:16px;">
+          <a href="/assinar/cartao?plano={{ plano.slug }}" class="btn primary">
+            💳 Assinar {{ plano.nome }}
+          </a>
+          <a href="/assinar/pix?plano={{ plano.slug }}" class="btn outline">
+            ⚡ Pix {{ plano.nome }}
+          </a>
+          {% if plano.slug != plano_atual.slug %}
+            <a href="/assinar?plano={{ plano.slug }}" class="link-btn">
+              Selecionar este plano
+            </a>
+          {% else %}
+            <span class="small-muted">Plano selecionado agora</span>
+          {% endif %}
+        </div>
       </div>
-
-      <p class="small-muted" style="margin-top:12px;">
-        Dica: em produção, configure o webhook do Mercado Pago apontando para <code>/webhook/mercadopago</code>.
-      </p>
-    </div>
+    {% endfor %}
   </div>
+
+  <p class="small-muted" style="margin-top:12px;">
+    Dica: em produção, configure o webhook do Mercado Pago apontando para <code>/webhook/mercadopago</code>.
+  </p>
 
   <div style="margin-top:28px;">
     <a href="/">← Voltar para o site</a>

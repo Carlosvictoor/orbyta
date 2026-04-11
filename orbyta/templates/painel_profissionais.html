@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Profissionais • {{ negocio.nome }}</title>
+  <title>🪐 Profissionais • {{ negocio.nome }}</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -17,7 +18,11 @@
     </div>
 
     <div class="dash-actions">
-      <a class="link-btn" href="/painel/profissionais/novo">+ Novo profissional</a>
+      {% if not limite_atingido %}
+        <a class="link-btn" href="/painel/profissionais/novo">+ Novo profissional</a>
+      {% else %}
+        <a class="link-btn" href="/assinar?plano=pro">Liberar mais funcionários</a>
+      {% endif %}
       <a class="link-btn" href="/painel">Voltar ao painel</a>
       <a class="link-btn" href="/logout">Sair</a>
     </div>
@@ -30,6 +35,24 @@
       {% endfor %}
     {% endif %}
   {% endwith %}
+
+  <div class="panel" style="margin-bottom:12px;">
+    <div class="panel-head">
+      <h2>Plano atual: {{ plano_info.nome }}</h2>
+      <span class="small-muted">
+        {% if limite_funcionarios %}
+          {{ qtd_profissionais }}/{{ limite_funcionarios }} funcionário cadastrado • {{ qtd_acessos_funcionarios }}/{{ limite_funcionarios }} com acesso
+        {% else %}
+          Funcionários e acessos ilimitados
+        {% endif %}
+      </span>
+    </div>
+    {% if limite_funcionarios %}
+      <div class="small-muted">No plano <strong>{{ plano_info.nome }}</strong> você pode adicionar apenas {{ limite_funcionarios }} funcionário. Para liberar mais, faça upgrade para o <strong>Orbyta Pro</strong>.</div>
+    {% else %}
+      <div class="small-muted">Seu plano já permite crescimento sem limite de funcionários.</div>
+    {% endif %}
+  </div>
 
   {% if profs|length == 0 %}
     <div class="panel">

@@ -3,7 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Novo profissional • {{ negocio.nome }}</title>
+  <title>🪐 Novo profissional • {{ negocio.nome }}</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
@@ -21,6 +22,16 @@
       {% endif %}
     {% endwith %}
 
+    {% if limite_funcionarios %}
+      <p style="opacity:.85; margin:8px 0 14px;">Plano atual: <strong>{{ plano_info.nome }}</strong> • {{ qtd_profissionais }}/{{ limite_funcionarios }} funcionário cadastrado.</p>
+    {% endif %}
+
+    {% if limite_atingido %}
+      <p style="color:#ffd166; font-weight:700; margin:14px 0;">Você atingiu o limite do plano {{ plano_info.nome }}. Faça upgrade para adicionar mais funcionários.</p>
+      <div style="display:flex; justify-content:center; margin-top:10px;">
+        <a href="/assinar?plano=pro" class="btn primary">Fazer upgrade para Pro</a>
+      </div>
+    {% else %}
     <form method="post" enctype="multipart/form-data">
       <input
         name="nome"
@@ -107,6 +118,7 @@
 
       <button type="submit">Salvar profissional</button>
     </form>
+    {% endif %}
 
     <div style="text-align:center; margin-top:14px;">
       <a href="/painel/profissionais">← Voltar para profissionais</a>

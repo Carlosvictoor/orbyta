@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, flash
 
 from core.json_db import carregar_json, salvar_json
 from core.auth import exigir_admin
-from core.constants import HORARIOS_FILE, AGENDAMENTOS_FILE, FINANCEIRO_FILE
+from core.constants import HORARIOS_FILE, AGENDAMENTOS_FILE, FINANCEIRO_FILE, obter_plano_config
 from core.security import hash_senha, senha_forte
 
 from services.negocios_service import listar_negocios, salvar_negocios, get_negocio
@@ -91,6 +91,7 @@ def admin_criar_dono():
             flash("Esse email já existe!")
             return redirect("/admin")
 
+    plano_inicial = obter_plano_config("pro")
     usuarios.append({
         "email": email,
         "senha": hash_senha(senha),
@@ -99,7 +100,11 @@ def admin_criar_dono():
         "assinatura_status": "trial",
         "trial_ate": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
         "mp_subscription_id": None,
-        "mp_pix_payment_id": None
+        "mp_pix_payment_id": None,
+        "plano_slug": plano_inicial["slug"],
+        "plano_nome": plano_inicial["nome"],
+        "limite_funcionarios": plano_inicial.get("limite_funcionarios"),
+        "valor_plano": plano_inicial["valor"],
     })
 
     salvar_usuarios(usuarios)

@@ -36,6 +36,7 @@ from services.financeiro_service import (
     zerar_financeiro_mes,
 )
 from services.whatsapp_service import send_whatsapp_message, telefone_valido_br, normalizar_telefone_e164
+from services.assinatura_service import plano_do_dono, limite_funcionarios_do_plano, pode_adicionar_mais_funcionarios
 
 dono_bp = Blueprint("dono", __name__)
 
@@ -924,7 +925,23 @@ def painel_profissionais():
         p["comissao_pct"] = clamp_pct(p.get("comissao_pct", 50), 50)
         p["categorias_servico"] = categorias_servico_profissional(p)
 
-    return render_template("painel_profissionais.html", negocio=negocio, profs=profs, categorias_servicos=categorias_servicos)
+    plano_info = plano_do_dono(u)
+    limite_funcionarios = limite_funcionarios_do_plano(u)
+    qtd_profissionais = len(profs)
+    qtd_acessos_funcionarios = sum(1 for usr in usuarios if usr.get("tipo") == "funcionario" and int(usr.get("negocio_id", 0) or 0) == int(negocio_id))
+    limite_atingido = limite_funcionarios is not None and qtd_profissionais >= int(limite_funcionarios)
+
+    return render_template(
+        "painel_profissionais.html",
+        negocio=negocio,
+        profs=profs,
+        categorias_servicos=categorias_servicos,
+        plano_info=plano_info,
+        limite_funcionarios=limite_funcionarios,
+        qtd_profissionais=qtd_profissionais,
+        qtd_acessos_funcionarios=qtd_acessos_funcionarios,
+        limite_atingido=limite_atingido,
+    )
 
 
 @dono_bp.route("/painel/profissionais/novo", methods=["GET", "POST"])
@@ -944,8 +961,15 @@ def painel_profissionais_novo():
 
     negocio = get_negocio(negocio_id)
     categorias_servicos = _categorias_servicos_negocio(servicos_do_negocio(int(negocio_id)))
+    plano_info = plano_do_dono(u)
+    limite_funcionarios = limite_funcionarios_do_plano(u)
+    profs_existentes = profissionais_do_negocio(negocio_id)
+    limite_atingido = limite_funcionarios is not None and len(profs_existentes) >= int(limite_funcionarios)
 
     if request.method == "POST":
+        if not pode_adicionar_mais_funcionarios(u, len(profs_existentes)):
+            flash(f"O plano {plano_info['nome']} permite apenas {limite_funcionarios} funcionário cadastrado. Faça upgrade para continuar ✅")
+            return redirect("/painel/profissionais")
         nome = request.form["nome"].strip()
         categoria = request.form.get("categoria", "").strip().lower()
         descricao = request.form.get("descricao", "").strip()
@@ -988,7 +1012,15 @@ def painel_profissionais_novo():
         flash("Profissional cadastrado com sucesso! ✅")
         return redirect("/painel/profissionais")
 
-    return render_template("painel_profissionais_novo.html", negocio=negocio, categorias_servicos=categorias_servicos)
+    return render_template(
+        "painel_profissionais_novo.html",
+        negocio=negocio,
+        categorias_servicos=categorias_servicos,
+        plano_info=plano_info,
+        limite_funcionarios=limite_funcionarios,
+        qtd_profissionais=len(profs_existentes),
+        limite_atingido=limite_atingido,
+    )
 
 
 @dono_bp.route("/painel/profissionais/perfil/<int:prof_id>", methods=["POST"])
@@ -1128,6 +1160,16 @@ def criar_acesso_profissional(prof_id):
         if usr.get("tipo") == "funcionario" and int(usr.get("profissional_id", 0) or 0) == int(prof_id):
             flash("Esse profissional já possui acesso criado.")
             return redirect("/painel/profissionais")
+
+    funcionarios_do_negocio = [
+        usr for usr in usuarios
+        if usr.get("tipo") == "funcionario" and int(usr.get("negocio_id", 0) or 0) == int(negocio_id)
+    ]
+    if not pode_adicionar_mais_funcionarios(u, len(funcionarios_do_negocio)):
+        plano_info = plano_do_dono(u)
+        limite = limite_funcionarios_do_plano(u)
+        flash(f"O plano {plano_info['nome']} permite apenas {limite} funcionário com acesso. Faça upgrade para liberar mais ✅")
+        return redirect("/painel/profissionais")
 
     usuarios.append({
         "email": email,

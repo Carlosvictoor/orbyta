@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 from flask import Blueprint, render_template, request, redirect, session, flash
 
 from core.auth import exigir_login, exigir_cliente, usuario_atual
-from core.constants import AGENDAMENTOS_FILE, SERVICOS_FILE, PROFISSIONAIS_FILE
+from core.constants import AGENDAMENTOS_FILE, SERVICOS_FILE, PROFISSIONAIS_FILE, obter_plano_config
 from core.helpers import SLOTS_PADRAO_30
 from core.json_db import carregar_json, salvar_json
 
@@ -213,13 +213,18 @@ def quero_ser_dono():
 
         salvar_negocios(negocios)
 
+        plano_inicial = obter_plano_config("pro")
         atualizar_usuario(u["email"], {
             "tipo": "dono",
             "negocio_id": novo_id,
             "assinatura_status": "trial",
             "trial_ate": (datetime.now() + timedelta(days=7)).strftime("%Y-%m-%d"),
             "mp_subscription_id": None,
-            "mp_pix_payment_id": None
+            "mp_pix_payment_id": None,
+            "plano_slug": plano_inicial["slug"],
+            "plano_nome": plano_inicial["nome"],
+            "limite_funcionarios": plano_inicial.get("limite_funcionarios"),
+            "valor_plano": plano_inicial["valor"],
         })
 
         session["tipo"] = "dono"
