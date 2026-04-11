@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Dashboard • {{ negocio.nome }}</title>
+  <title>🪐 Gestão de controle • {{ negocio.nome }}</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -13,7 +13,7 @@
 
   <div class="dash-top">
     <div class="dash-title">
-      <h1>Dashboard</h1>
+      <h1>Gestão de controle</h1>
       <p>{{ negocio.nome }} • {{ negocio.bairro }} • {{ negocio.cidade }}</p>
     </div>
 
@@ -281,23 +281,6 @@
     {% else %}
       <div class="small-muted">Cadastre profissionais, serviços e horários para liberar essa função.</div>
     {% endif %}
-  </div>
-
-  <div class="panel" style="margin-top:12px;">
-    <div class="panel-head">
-      <h2>🚀 Status para publicar</h2>
-      <span class="small-muted">Checklist rápido do que já está pronto</span>
-    </div>
-
-    <div class="summary-row" style="margin-top:0;">
-      {% for item in integracoes %}
-        <div class="summary-card">
-          <span class="muted">{{ item.nome }}</span>
-          <strong style="font-size:18px;">{{ 'OK' if item.ok else 'Pendente' }}</strong>
-          <div class="small-muted" style="margin-top:8px;">{{ item.detalhe }}</div>
-        </div>
-      {% endfor %}
-    </div>
   </div>
 
   <div class="panel" style="margin-top:12px;">
