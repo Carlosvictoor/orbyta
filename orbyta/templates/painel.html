@@ -111,6 +111,31 @@
     </div>
   </div>
 
+  <div class="panel" style="margin-top:12px;">
+    <div class="panel-head">
+      <h2>⏰ Lembretes manuais no WhatsApp</h2>
+      <span class="small-muted">Botão pronto para abrir o WhatsApp Web com a mensagem de 45 min</span>
+    </div>
+
+    {% if lembretes_manuais and lembretes_manuais|length > 0 %}
+      <div class="summary-row" style="margin-top:0;">
+        {% for a in lembretes_manuais %}
+          <div class="summary-card">
+            <span class="muted">{{ a.data }} • {{ a.horario }}</span>
+            <strong>{{ a.nome }}</strong>
+            <div class="small-muted" style="margin-top:8px;">{{ a.servico or 'Serviço' }} • {{ a.barbeiro or 'Profissional' }}</div>
+            <div class="small-muted" style="margin-top:6px;">Faltam {{ a.faltam_minutos }} min para o atendimento.</div>
+            <div style="margin-top:12px;">
+              <a class="link-btn" href="{{ a.lembrete_manual_link }}" target="_blank" rel="noopener noreferrer">Enviar no WhatsApp</a>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="small-muted">Nenhum cliente está dentro da janela de 45 minutos neste momento.</div>
+    {% endif %}
+  </div>
+
   <div class="two-col">
     <div class="panel">
       <div class="panel-head">
@@ -157,6 +182,11 @@
               {% endif %}
               <br>
               <span class="small-muted">{{ p.servico }} • {{ p.barbeiro }}</span>
+              {% if p.pode_enviar_lembrete and p.lembrete_manual_link %}
+                <div style="margin-top:8px;">
+                  <a class="link-btn" href="{{ p.lembrete_manual_link }}" target="_blank" rel="noopener noreferrer">Enviar lembrete {{ p.faltam_minutos }} min</a>
+                </div>
+              {% endif %}
             </li>
           {% endfor %}
         </ul>
@@ -350,6 +380,11 @@
               {% endif %}
             </td>
             <td style="white-space:nowrap;">
+              {% if a.pode_enviar_lembrete and a.lembrete_manual_link %}
+                <a class="link-btn" href="{{ a.lembrete_manual_link }}" target="_blank" rel="noopener noreferrer">Lembrete 45 min</a>
+              {% elif a.whatsapp_link %}
+                <a class="link-btn" href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer">WhatsApp</a>
+              {% endif %}
               <a class="link-btn" href="/painel/agendamentos/cancelar/{{ ag_id|urlencode }}">Cancelar</a>
               <a class="link-btn" href="/painel/agendamentos/excluir/{{ ag_id|urlencode }}">Excluir</a>
             </td>

@@ -197,6 +197,11 @@
                 {% if a.whatsapp_link %}
                   <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
                 {% endif %}
+                {% if a.pode_enviar_lembrete and a.lembrete_manual_link %}
+                  <div style="margin-top:8px;">
+                    <a class="link-btn" href="{{ a.lembrete_manual_link }}" target="_blank" rel="noopener noreferrer">Enviar lembrete {{ a.faltam_minutos }} min</a>
+                  </div>
+                {% endif %}
               </td>
               <td>{{ a.servico }}</td>
               <td>R$ {{ a.valor }}</td>

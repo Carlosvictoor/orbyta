@@ -13,14 +13,18 @@ from services.servicos_service import servico_preco, servico_nome_by_id, servico
 from services.horarios_service import obter_horarios_disponiveis, obter_horarios_globais
 from services.profissionais_service import comissao_pct_profissional
 from services.financeiro_service import calcular_valores_comissao
-from services.whatsapp_service import normalizar_telefone_e164, telefone_valido_br
+from services.whatsapp_service import (
+    normalizar_telefone_e164,
+    telefone_valido_br,
+    renderizar_template_lembrete,
+    gerar_link_whatsapp,
+)
 
 funcionario_bp = Blueprint("funcionario", __name__)
 
 
-def _whatsapp_link(telefone: str) -> str:
-    numero = normalizar_telefone_e164(telefone or "")
-    return f"https://wa.me/{numero}" if numero else ""
+def _whatsapp_link(telefone: str, mensagem: str = "") -> str:
+    return gerar_link_whatsapp(telefone, mensagem)
 
 
 @funcionario_bp.route("/painel-funcionario")
@@ -87,12 +91,35 @@ def painel_funcionario():
         _, valor_profissional_item, valor_salao_item = calcular_valores_comissao(valor, pct_item)
 
         telefone = a.get("telefone", "")
+        agendamento_dt = None
+        faltam_minutos = None
+        lembrete_manual_link = ""
+        pode_enviar_lembrete = False
+
+        try:
+            agendamento_dt = datetime.strptime(
+                f"{a.get('data', '')} {a.get('horario', '')}",
+                "%Y-%m-%d %H:%M",
+            )
+        except Exception:
+            agendamento_dt = None
+
+        if telefone and agendamento_dt and (a.get("status_confirmacao") or "").strip().lower() != "cancelado":
+            faltam_minutos = int((agendamento_dt - datetime.now()).total_seconds() / 60)
+            if 0 < faltam_minutos <= 45:
+                mensagem = renderizar_template_lembrete(negocio.get("whatsapp_mensagem_template", ""), a, negocio)
+                lembrete_manual_link = _whatsapp_link(telefone, mensagem)
+                pode_enviar_lembrete = True
+
         meus_agendamentos.append({
             "data": a.get("data", ""),
             "horario": a.get("horario", ""),
             "cliente": a.get("nome", ""),
             "telefone": telefone,
             "whatsapp_link": _whatsapp_link(telefone),
+            "lembrete_manual_link": lembrete_manual_link,
+            "pode_enviar_lembrete": pode_enviar_lembrete,
+            "faltam_minutos": faltam_minutos,
             "servico": a.get("servico") or servico_nome_by_id(negocio_id, sid) or "Serviço",
             "valor": round(valor, 2),
             "comissao_pct": pct_item,

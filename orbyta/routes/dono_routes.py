@@ -35,15 +35,57 @@ from services.financeiro_service import (
     remover_lancamento_financeiro,
     zerar_financeiro_mes,
 )
-from services.whatsapp_service import send_whatsapp_message, telefone_valido_br, normalizar_telefone_e164
+from services.whatsapp_service import (
+    send_whatsapp_message,
+    telefone_valido_br,
+    normalizar_telefone_e164,
+    renderizar_template_lembrete,
+    gerar_link_whatsapp,
+)
 from services.assinatura_service import plano_do_dono, limite_funcionarios_do_plano, pode_adicionar_mais_funcionarios
 
 dono_bp = Blueprint("dono", __name__)
 
 
-def _whatsapp_link(telefone: str) -> str:
-    numero = normalizar_telefone_e164(telefone or "")
-    return f"https://wa.me/{numero}" if numero else ""
+def _whatsapp_link(telefone: str, mensagem: str = "") -> str:
+    return gerar_link_whatsapp(telefone, mensagem)
+
+
+def _parse_agendamento_datahora(item: dict):
+    try:
+        return datetime.strptime(
+            f"{item.get('data', '')} {item.get('horario', '')}",
+            "%Y-%m-%d %H:%M",
+        )
+    except Exception:
+        return None
+
+
+def _enriquecer_whatsapp_agendamento(item: dict, negocio: dict, now: datetime):
+    telefone = (item.get("telefone") or "").strip()
+    status = (item.get("status_confirmacao") or "").strip().lower()
+
+    item["whatsapp_link"] = _whatsapp_link(telefone)
+    item["lembrete_manual_link"] = ""
+    item["faltam_minutos"] = None
+    item["pode_enviar_lembrete"] = False
+
+    if not telefone or status == "cancelado":
+        return item
+
+    horario_agendado = _parse_agendamento_datahora(item)
+    if not horario_agendado:
+        return item
+
+    faltam_minutos = int((horario_agendado - now).total_seconds() / 60)
+    item["faltam_minutos"] = faltam_minutos
+
+    if 0 < faltam_minutos <= 45:
+        mensagem = renderizar_template_lembrete(negocio.get("whatsapp_mensagem_template", ""), item, negocio)
+        item["lembrete_manual_link"] = _whatsapp_link(telefone, mensagem)
+        item["pode_enviar_lembrete"] = True
+
+    return item
 
 
 def _categorias_servicos_negocio(servs):
@@ -92,8 +134,12 @@ def painel():
     ag = carregar_json(AGENDAMENTOS_FILE)
     ag_do_negocio = [a for a in ag if int(a.get("negocio_id", 0)) == negocio_id]
     ag_do_negocio.sort(key=lambda x: (x.get("data", ""), x.get("horario", "")), reverse=True)
+
+    now = datetime.now()
     for item in ag_do_negocio:
-        item["whatsapp_link"] = _whatsapp_link(item.get("telefone"))
+        _enriquecer_whatsapp_agendamento(item, negocio, now)
+
+    lembretes_manuais = [item for item in ag_do_negocio if item.get("pode_enviar_lembrete")]
 
     negocio["whatsapp_link"] = _whatsapp_link(negocio.get("whatsapp"))
 
@@ -134,7 +180,10 @@ def painel():
                 "servico": servico or servico_nome_by_id(negocio_id, sid) or "Serviço",
                 "barbeiro": barbeiro or "Profissional",
                 "telefone": a.get("telefone", ""),
-                "whatsapp_link": _whatsapp_link(a.get("telefone", "")),
+                "whatsapp_link": a.get("whatsapp_link", _whatsapp_link(a.get("telefone", ""))),
+                "lembrete_manual_link": a.get("lembrete_manual_link", ""),
+                "pode_enviar_lembrete": a.get("pode_enviar_lembrete", False),
+                "faltam_minutos": a.get("faltam_minutos"),
             })
 
         if data_ag[:7] == mes_atual:
@@ -232,6 +281,7 @@ def painel():
         servs=servs,
         horarios_configurados=times,
         data_hoje=hoje,
+        lembretes_manuais=lembretes_manuais[:8],
     )
 
 

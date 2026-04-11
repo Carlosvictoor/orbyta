@@ -1,6 +1,7 @@
 import os
 import re
 from datetime import datetime
+from urllib.parse import quote
 
 import requests
 
@@ -51,6 +52,18 @@ def formatar_data_br(data_iso: str) -> str:
 def numero_whatsapp_negocio(negocio: dict | None) -> str:
     negocio = negocio or {}
     return (negocio.get("whatsapp_numero_envio") or negocio.get("whatsapp") or "").strip()
+
+
+def gerar_link_whatsapp(telefone: str, mensagem: str = "") -> str:
+    numero = normalizar_telefone_e164(telefone)
+    if not numero:
+        return ""
+
+    numero_sem_formatacao = _somente_digitos(numero)
+    texto = (mensagem or "").strip()
+    if texto:
+        return f"https://wa.me/{numero_sem_formatacao}?text={quote(texto)}"
+    return f"https://wa.me/{numero_sem_formatacao}"
 
 
 def renderizar_template_lembrete(template: str, agendamento: dict, negocio: dict) -> str:
