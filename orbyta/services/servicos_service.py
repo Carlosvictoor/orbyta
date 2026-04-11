@@ -71,6 +71,7 @@ def normalizar_servico(item):
     servico = dict(item or {})
     servico["descricao"] = _texto_limpo(servico.get("descricao"))
     servico["nome"] = _texto_limpo(servico.get("nome"))
+    servico["foto"] = _texto_limpo(servico.get("foto"))
 
     categoria_informada = _texto_limpo(servico.get("categoria") or servico.get("tipo_servico"))
     categoria_inferida = _inferir_categoria(servico.get("nome"), servico.get("descricao"))

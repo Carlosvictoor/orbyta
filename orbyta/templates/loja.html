@@ -147,6 +147,9 @@
             <div class="accordion-services-list">
               {% for s in grupo.itens %}
                 <div class="accordion-service-item" style="cursor:default;">
+                  {% if s.foto %}
+                    <img src="{{ s.foto }}" alt="{{ s.nome }}" style="width:100%; max-width:220px; height:140px; object-fit:cover; border-radius:12px; margin-bottom:10px; border:1px solid rgba(255,255,255,.08);">
+                  {% endif %}
                   <div class="accordion-service-top">
                     <strong>{{ s.nome }}</strong>
                     <span class="service-price">R$ {{ s.preco }}</span>

@@ -6,6 +6,7 @@ from flask import Blueprint, render_template, request, redirect, flash
 from core.json_db import carregar_json, salvar_json
 from core.auth import exigir_admin
 from core.constants import HORARIOS_FILE, AGENDAMENTOS_FILE, FINANCEIRO_FILE, obter_plano_config
+from core.helpers import parse_data_iso
 from core.security import hash_senha, senha_forte
 
 from services.negocios_service import listar_negocios, salvar_negocios, get_negocio
@@ -16,6 +17,29 @@ from services.usuarios_service import listar_usuarios, salvar_usuarios
 admin_bp = Blueprint("admin", __name__)
 
 
+def _tempo_restante_plano(dono: dict) -> str:
+    status = (dono.get("assinatura_status") or "").strip().lower()
+    trial_ate_raw = (dono.get("trial_ate") or "").strip()
+    trial_ate = parse_data_iso(trial_ate_raw)
+
+    if status == "ativa":
+        return "Assinatura ativa"
+    if status == "pendente":
+        return "Pagamento pendente"
+    if status == "cancelada":
+        return "Plano cancelado"
+    if status == "trial" and trial_ate:
+        restante = (trial_ate + timedelta(hours=23, minutes=59)) - datetime.now()
+        if restante.total_seconds() <= 0:
+            return f"Expirado em {trial_ate_raw}"
+        dias = restante.days
+        horas = max(restante.seconds // 3600, 1)
+        if dias >= 1:
+            return f"{dias} dia(s) restante(s) • até {trial_ate_raw}"
+        return f"{horas} hora(s) restante(s) • até {trial_ate_raw}"
+    return "Sem plano ativo"
+
+
 @admin_bp.route("/admin")
 def admin():
     if not exigir_admin():
@@ -24,8 +48,13 @@ def admin():
     negocios = listar_negocios()
     usuarios = listar_usuarios()
     donos = [u for u in usuarios if u.get("tipo") == "dono"]
+    planos = [obter_plano_config("solo"), obter_plano_config("pro")]
 
-    return render_template("admin.html", negocios=negocios, donos=donos)
+    for d in donos:
+        d["plano_info"] = obter_plano_config(d.get("plano_slug") or "pro")
+        d["tempo_restante"] = _tempo_restante_plano(d)
+
+    return render_template("admin.html", negocios=negocios, donos=donos, planos=planos)
 
 
 @admin_bp.route("/admin/criar_negocio", methods=["POST"])
@@ -70,6 +99,7 @@ def admin_criar_dono():
     email = request.form["email"].strip().lower()
     senha = request.form["senha"].strip()
     negocio_id = request.form["negocio_id"].strip()
+    plano_slug = request.form.get("plano_slug", "pro").strip().lower()
 
     if not senha_forte(senha):
         flash("A senha do dono precisa ter pelo menos 6 caracteres.")
@@ -91,7 +121,7 @@ def admin_criar_dono():
             flash("Esse email já existe!")
             return redirect("/admin")
 
-    plano_inicial = obter_plano_config("pro")
+    plano_inicial = obter_plano_config(plano_slug)
     usuarios.append({
         "email": email,
         "senha": hash_senha(senha),
@@ -108,7 +138,32 @@ def admin_criar_dono():
     })
 
     salvar_usuarios(usuarios)
-    flash("Dono criado com 7 dias grátis e vinculado ao negócio ✅")
+    flash(f"Dono criado no plano {plano_inicial['nome']} com 7 dias grátis ✅")
+    return redirect("/admin")
+
+
+@admin_bp.route("/admin/dono/plano/<path:email>", methods=["POST"])
+def admin_atualizar_plano_dono(email):
+    if not exigir_admin():
+        return redirect("/login")
+
+    email = unquote(email).strip().lower()
+    plano_slug = request.form.get("plano_slug", "pro").strip().lower()
+    plano = obter_plano_config(plano_slug)
+
+    usuarios = listar_usuarios()
+    ok = False
+    for u in usuarios:
+        if u.get("email", "").lower() == email and u.get("tipo") == "dono":
+            u["plano_slug"] = plano["slug"]
+            u["plano_nome"] = plano["nome"]
+            u["limite_funcionarios"] = plano.get("limite_funcionarios")
+            u["valor_plano"] = plano["valor"]
+            ok = True
+            break
+
+    salvar_usuarios(usuarios)
+    flash(f"Plano atualizado para {plano['nome']} ✅" if ok else "Dono não encontrado.")
     return redirect("/admin")
 
 

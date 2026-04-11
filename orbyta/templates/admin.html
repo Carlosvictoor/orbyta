@@ -121,6 +121,13 @@
       <input name="email" type="email" placeholder="Email do dono" required>
       <input name="senha" type="text" placeholder="Senha do dono" required>
 
+      <label style="display:block; margin-top:10px; opacity:.9;">Plano do dono</label>
+      <select name="plano_slug" required>
+        {% for plano in planos %}
+          <option value="{{ plano.slug }}">{{ plano.nome }} • R$ {{ "%.2f"|format(plano.valor) }}</option>
+        {% endfor %}
+      </select>
+
       <label style="display:block; margin-top:10px; opacity:.9;">Vincular ao negócio</label>
       <select name="negocio_id" required>
         <option value="">Selecione</option>
@@ -147,6 +154,22 @@
       <div class="biz-card">
         <h3 style="margin:0 0 6px;">{{ d.email }}</h3>
         <p style="opacity:.85;">negocio_id: {{ d.negocio_id }}</p>
+        <p style="opacity:.85;">Plano atual: <strong>{{ d.plano_info.nome }}</strong></p>
+        <p style="opacity:.85;">Status: <strong>{{ (d.assinatura_status or 'não iniciado')|capitalize }}</strong></p>
+        <p style="opacity:.85;">Tempo restante: <strong>{{ d.tempo_restante }}</strong></p>
+        {% if d.trial_ate %}
+          <p style="opacity:.75; margin-top:-4px;">Validade registrada: {{ d.trial_ate }}</p>
+        {% endif %}
+
+        <form method="post" action="/admin/dono/plano/{{ d.email|urlencode }}" style="margin-top:12px;">
+          <label style="display:block; margin-bottom:6px; opacity:.9;">Alterar plano</label>
+          <select name="plano_slug" required>
+            {% for plano in planos %}
+              <option value="{{ plano.slug }}" {% if (d.plano_info.slug or '') == plano.slug %}selected{% endif %}>{{ plano.nome }} • R$ {{ "%.2f"|format(plano.valor) }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit">Salvar plano</button>
+        </form>
 
         <div class="row-actions">
           <!-- ✅ EXCLUIR DONO -->

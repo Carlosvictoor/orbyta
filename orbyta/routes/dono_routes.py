@@ -728,7 +728,9 @@ def painel_servicos_novo():
     negocio_id = int(session.get("negocio_id"))
     categoria = request.form.get("categoria", "").strip()
     nome = request.form.get("nome", "").strip()
+    foto_url = request.form.get("foto_url", "").strip()
     descricao = request.form.get("descricao", "").strip()
+    ordem_raw = request.form.get("ordem", "0").strip()
     duracao_raw = request.form.get("duracao", "30").strip()
     preco = request.form.get("preco", "").strip()
 
@@ -757,6 +759,15 @@ def painel_servicos_novo():
         flash("Preço inválido.")
         return redirect("/painel/servicos")
 
+    foto_upload, erro_upload = salvar_imagem_upload(
+        request.files.get("foto_arquivo"),
+        current_app.static_folder,
+        prefix=f"servico-{negocio_id}",
+    )
+    if erro_upload:
+        flash(erro_upload)
+        return redirect("/painel/servicos")
+
     servs = listar_servicos()
     novo_id = max([int(s.get("id", 0)) for s in servs], default=0) + 1
 
@@ -765,6 +776,7 @@ def painel_servicos_novo():
         "negocio_id": negocio_id,
         "categoria": categoria,
         "nome": nome,
+        "foto": foto_upload or foto_url,
         "descricao": descricao,
         "ordem": ordem,
         "duracao_min": duracao,
@@ -792,11 +804,13 @@ def painel_servicos_editar():
     sid = request.form.get("id", "").strip()
     categoria = request.form.get("categoria", "").strip()
     nome = request.form.get("nome", "").strip()
+    foto_url = request.form.get("foto_url", "").strip()
     descricao = request.form.get("descricao", "").strip()
     ordem_raw = request.form.get("ordem", "0").strip()
     duracao_raw = request.form.get("duracao", "30").strip()
     preco = request.form.get("preco", "").strip()
     ativo = request.form.get("ativo", "1").strip()
+    remover_foto = request.form.get("remover_foto") == "1"
 
     if not sid.isdigit():
         flash("Serviço inválido.")
@@ -827,12 +841,27 @@ def painel_servicos_editar():
         flash("Preço inválido.")
         return redirect("/painel/servicos")
 
+    foto_upload, erro_upload = salvar_imagem_upload(
+        request.files.get("foto_arquivo"),
+        current_app.static_folder,
+        prefix=f"servico-{sid}",
+    )
+    if erro_upload:
+        flash(erro_upload)
+        return redirect("/painel/servicos")
+
     servs = listar_servicos()
     ok = False
     for s in servs:
         if int(s.get("id", 0)) == int(sid) and int(s.get("negocio_id", 0)) == negocio_id:
             s["categoria"] = categoria
             s["nome"] = nome
+            if remover_foto:
+                s["foto"] = ""
+            elif foto_upload:
+                s["foto"] = foto_upload
+            elif foto_url:
+                s["foto"] = foto_url
             s["descricao"] = descricao
             s["ordem"] = ordem
             s["duracao_min"] = dur

@@ -55,6 +55,9 @@
             <div class="accordion-services-list">
               {% for s in grupo.itens %}
                 <div class="accordion-service-item active" style="cursor:default;">
+                  {% if s.foto %}
+                    <img src="{{ s.foto }}" alt="{{ s.nome }}" style="width:100%; max-width:180px; height:120px; object-fit:cover; border-radius:12px; margin-bottom:10px; border:1px solid rgba(255,255,255,.08);">
+                  {% endif %}
                   <div class="accordion-service-top">
                     <strong>#{{ s.ordem }} • {{ s.nome }}</strong>
                     <span class="service-price">R$ {{ s.preco }}</span>
@@ -79,7 +82,7 @@
         <span class="small-muted">Cadastre por categoria para o accordion do cliente ficar organizado</span>
       </div>
 
-      <form method="post" action="/painel/servicos/novo">
+      <form method="post" action="/painel/servicos/novo" enctype="multipart/form-data">
         <div style="display:grid; gap:10px;">
           <input class="input" id="categoriaInput" name="categoria" list="categoriasLista" placeholder="Tipo de serviço (ex: Unha, Cabelo, Barba)" required>
           <datalist id="categoriasLista">
@@ -95,6 +98,8 @@
           </div>
 
           <input class="input" name="nome" placeholder="Qual serviço? (ex: Alongamento em gel, Corte social)" required>
+          <input class="input" name="foto_url" placeholder="Link da foto do serviço (opcional)">
+          <input class="input" type="file" name="foto_arquivo" accept=".png,.jpg,.jpeg,.webp,.gif">
 
           <textarea class="input" name="descricao" placeholder="Descrição do serviço para aparecer no agendamento do cliente"></textarea>
 
@@ -138,7 +143,14 @@
             {% for s in servs %}
             <tr>
               <td><span class="badge gray">{{ s.categoria or 'Geral' }}</span></td>
-              <td><strong>{{ s.nome }}</strong></td>
+              <td>
+                <div style="display:flex; align-items:center; gap:10px;">
+                  {% if s.foto %}
+                    <img src="{{ s.foto }}" alt="{{ s.nome }}" style="width:46px; height:46px; border-radius:10px; object-fit:cover; border:1px solid rgba(255,255,255,.08);">
+                  {% endif %}
+                  <strong>{{ s.nome }}</strong>
+                </div>
+              </td>
               <td>{{ s.descricao or '—' }}</td>
               <td>#{{ s.ordem or 0 }}</td>
               <td>{{ s.duracao_min }} min</td>
@@ -152,7 +164,7 @@
               </td>
               <td style="text-align:right; white-space:nowrap;">
                 <button class="link-btn" type="button"
-                        onclick='openEdit({{ {"id": s.id, "categoria": s.categoria or "Geral", "nome": s.nome, "descricao": s.descricao or "", "ordem": s.ordem or 0, "duracao_min": s.duracao_min, "preco": s.preco, "ativo": 1 if s.ativo else 0} | tojson | safe }})'>
+                        onclick='openEdit({{ {"id": s.id, "categoria": s.categoria or "Geral", "nome": s.nome, "foto": s.foto or "", "descricao": s.descricao or "", "ordem": s.ordem or 0, "duracao_min": s.duracao_min, "preco": s.preco, "ativo": 1 if s.ativo else 0} | tojson | safe }})'>
                   Editar
                 </button>
                 {% if s.ativo %}
@@ -177,7 +189,7 @@
         <button class="link-btn" type="button" onclick="closeEdit()">Fechar</button>
       </div>
 
-      <form method="post" action="/painel/servicos/editar" id="editForm">
+      <form method="post" action="/painel/servicos/editar" id="editForm" enctype="multipart/form-data">
         <input type="hidden" name="id" id="e_id">
 
         <div style="display:grid; gap:10px;">
@@ -188,7 +200,14 @@
             {% endfor %}
           </div>
           <input class="input" name="nome" id="e_nome" required>
+          <input class="input" name="foto_url" id="e_foto" placeholder="Link da foto do serviço (opcional)">
+          <input class="input" type="file" name="foto_arquivo" accept=".png,.jpg,.jpeg,.webp,.gif">
           <textarea class="input" name="descricao" id="e_descricao" placeholder="Descrição do serviço"></textarea>
+
+          <label class="small-muted" style="display:flex; gap:8px; align-items:center; margin-top:0;">
+            <input type="checkbox" name="remover_foto" value="1" style="width:auto; margin:0;">
+            Remover foto atual
+          </label>
 
           <div class="two-col" style="margin-top:0;">
             <input class="input" name="ordem" id="e_ordem" type="number" min="0" required>
@@ -228,6 +247,7 @@
     document.getElementById("e_id").value = payload.id || "";
     document.getElementById("e_categoria").value = payload.categoria || "Geral";
     document.getElementById("e_nome").value = payload.nome || "";
+    document.getElementById("e_foto").value = payload.foto || "";
     document.getElementById("e_descricao").value = payload.descricao || "";
     document.getElementById("e_ordem").value = payload.ordem ?? 0;
     document.getElementById("e_dur").value = payload.duracao_min || "30";
