@@ -3,8 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Orbyta</title>
+  <title>🪐 Orbyta • Agendamentos online</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f97316">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Orbyta">
+  <script defer src="/static/pwa-register.js"></script>
   <link rel="stylesheet" href="/static/style.css">
 </head>
 
@@ -13,7 +21,13 @@
 <header class="navbar">
 
   <div class="logo">
-    Orbyta 🪐
+    <a href="/" class="brand-link" aria-label="Voltar para a página inicial da Orbyta">
+      <span class="brand-badge">🪐</span>
+      <span class="brand-text">
+        <strong>Orbyta</strong>
+        <small>Agendamentos online</small>
+      </span>
+    </a>
   </div>
 
   <nav class="menu">

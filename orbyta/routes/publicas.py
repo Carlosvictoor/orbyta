@@ -1,10 +1,38 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, current_app, make_response
 from services.negocios_service import listar_negocios, get_negocio
 from services.servicos_service import servicos_do_negocio, agrupar_servicos_por_categoria
 from services.profissionais_service import profissionais_do_negocio
 from services.horarios_service import obter_horarios_globais
 
 publicas_bp = Blueprint("publicas", __name__)
+
+
+# ── PWA routes ───────────────────────────────────────────────
+
+@publicas_bp.get("/sw.js")
+def service_worker():
+    """Serve o service worker na raiz para que o escopo cubra todo o app."""
+    response = make_response(
+        current_app.send_static_file("sw.js")
+    )
+    response.headers["Content-Type"] = "application/javascript"
+    response.headers["Service-Worker-Allowed"] = "/"
+    response.headers["Cache-Control"] = "no-cache"
+    return response
+
+
+@publicas_bp.get("/manifest.json")
+def web_manifest():
+    response = make_response(
+        current_app.send_static_file("manifest.json")
+    )
+    response.headers["Content-Type"] = "application/manifest+json"
+    return response
+
+
+@publicas_bp.get("/offline")
+def offline():
+    return render_template("offline.html"), 200
 
 
 @publicas_bp.route("/")

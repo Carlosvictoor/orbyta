@@ -1,0 +1,43 @@
+{
+  "name": "Orbyta • Agendamentos",
+  "short_name": "Orbyta",
+  "description": "Agendamentos online para salões, barbearias e clínicas de estética.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#f97316",
+  "lang": "pt-BR",
+  "icons": [
+    {
+      "src": "/static/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/static/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Agendar agora",
+      "short_name": "Agendar",
+      "description": "Ver negócios disponíveis para agendar",
+      "url": "/negocios",
+      "icons": [{ "src": "/static/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Meus agendamentos",
+      "short_name": "Minha conta",
+      "description": "Ver e gerenciar meus agendamentos",
+      "url": "/cliente",
+      "icons": [{ "src": "/static/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "screenshots": []
+}
