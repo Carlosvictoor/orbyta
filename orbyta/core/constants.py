@@ -6,15 +6,17 @@ load_env_file()
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 PROJECT_ROOT = os.path.dirname(BASE_DIR)
+DEFAULT_DB_FILE = "/app/data/database.db"
 
 # Permite usar um volume persistente em produção (Render/Railway/VPS).
 ENV_DATA_DIR = os.getenv("ORBYTA_DATA_DIR", "").strip()
+ENV_DB_FILE = os.getenv("ORBYTA_DB_FILE", "").strip()
 
 # Prioriza a pasta data configurada no ambiente; se não existir, usa a raiz do workspace e depois a local do app.
 ROOT_DATA_DIR = os.path.join(PROJECT_ROOT, "data")
 LOCAL_DATA_DIR = os.path.join(BASE_DIR, "data")
 DATA_DIR = ENV_DATA_DIR or (ROOT_DATA_DIR if os.path.isdir(ROOT_DATA_DIR) else LOCAL_DATA_DIR)
-DB_FILE = os.path.join(DATA_DIR, "orbyta.db")
+DB_FILE = ENV_DB_FILE or (DEFAULT_DB_FILE if os.path.isdir("/app/data") else os.path.join(DATA_DIR, "database.db"))
 
 USUARIOS_FILE = os.path.join(DATA_DIR, "usuarios.json")
 AGENDAMENTOS_FILE = os.path.join(DATA_DIR, "agendamentos.json")

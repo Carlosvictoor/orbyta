@@ -155,6 +155,9 @@ def _table_name(nome):
 
 
 def _connect():
+    pasta_db = os.path.dirname(DB_FILE)
+    if pasta_db and not os.path.exists(pasta_db):
+        os.makedirs(pasta_db, exist_ok=True)
     return sqlite3.connect(DB_FILE, check_same_thread=False)
 
 
