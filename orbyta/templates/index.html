@@ -18,7 +18,7 @@
 
 <body>
 
-<header class="navbar">
+<header class="navbar home-navbar">
 
   <div class="logo">
     <a href="/" class="brand-link" aria-label="Voltar para a página inicial da Orbyta">
@@ -30,22 +30,22 @@
     </a>
   </div>
 
-  <nav class="menu">
+  <nav class="menu main-menu-wrap" aria-label="Menu principal">
     <ul>
-      <li class="dropdown">
-        <button class="dropbtn">Negócios ▾</button>
-        <div class="dropdown-content">
-          <a href="/negocios">Ver todas as categorias</a>
-          <a href="/negocios/saloes">Salões de Beleza</a>
-          <a href="/negocios/barbearias">Barbearias</a>
-          <a href="/negocios/clinicas">Clínicas de Estética</a>
-          <a href="/negocios/studios">Studios</a>
+      <li class="dropdown main-menu-dropdown">
+        <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Menu ▾</button>
+        <div class="dropdown-content" role="menu">
+          <a href="/negocios" role="menuitem">Negócios</a>
+          <a href="/planos" role="menuitem">Planos</a>
+          <a href="#sobre" role="menuitem">A Orbyta</a>
+          <a href="/cliente" role="menuitem">Meus Agendamentos</a>
+          <hr class="menu-divider">
+          <a href="/negocios/saloes" role="menuitem">Salões de Beleza</a>
+          <a href="/negocios/barbearias" role="menuitem">Barbearias</a>
+          <a href="/negocios/clinicas" role="menuitem">Clínicas de Estética</a>
+          <a href="/negocios/studios" role="menuitem">Studios</a>
         </div>
       </li>
-
-      <li><a href="/planos">Planos</a></li>
-      <li><a href="#sobre">A Orbyta</a></li>
-      <li><a href="/cliente">Meus Agendamentos</a></li>
     </ul>
   </nav>
 
@@ -193,11 +193,13 @@
 
   button.addEventListener("click", (e) => {
     e.stopPropagation();
-    dropdown.classList.toggle("active");
+    const isActive = dropdown.classList.toggle("active");
+    button.setAttribute("aria-expanded", String(isActive));
   });
 
   document.addEventListener("click", () => {
     dropdown.classList.remove("active");
+    button.setAttribute("aria-expanded", "false");
   });
 </script>
 

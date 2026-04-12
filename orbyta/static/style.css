@@ -54,6 +54,44 @@ a:focus, button:focus, input:focus, select:focus{
   white-space: nowrap;
 }
 
+.brand-link{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+}
+
+.brand-badge{
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #00c853, #00e676);
+  color: #08120c;
+  box-shadow: 0 10px 26px rgba(0, 200, 83, .28);
+  font-size: 20px;
+}
+
+.brand-text{
+  display: flex;
+  flex-direction: column;
+  line-height: 1.05;
+  text-align: left;
+}
+
+.brand-text strong{
+  font-size: 20px;
+}
+
+.brand-text small{
+  font-size: 10px;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,.74);
+}
+
 .menu{
   flex: 1;
   min-width: 220px;
@@ -144,6 +182,67 @@ a:focus, button:focus, input:focus, select:focus{
 }
 
 .dropdown.active .dropdown-content{ display:block; }
+
+/* =========================
+   HOME NAVBAR (index)
+========================= */
+.home-navbar{
+  justify-content: space-between;
+}
+
+.home-navbar .logo{
+  margin-right: 10px;
+}
+
+.home-navbar .main-menu-wrap{
+  flex: 0 0 auto;
+  min-width: auto;
+  margin-left: auto;
+  margin-right: 10px;
+}
+
+.home-navbar .main-menu-wrap ul{
+  flex-wrap: nowrap;
+}
+
+.home-navbar .main-menu-dropdown .dropbtn{
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,.15);
+  background: rgba(255,255,255,.06);
+}
+
+.home-navbar .main-menu-dropdown .dropbtn:hover{
+  background: rgba(255,255,255,.12);
+  opacity: 1;
+}
+
+.home-navbar .main-menu-dropdown .dropdown-content{
+  left: auto;
+  right: 0;
+  width: 260px;
+}
+
+.home-navbar .menu-divider{
+  border: 0;
+  border-top: 1px solid rgba(255,255,255,.12);
+  margin: 8px 0;
+}
+
+.home-navbar .actions{
+  flex: 0 0 auto;
+  justify-content: flex-end;
+  margin-left: 0;
+}
+
+.home-navbar .actions .btn{
+  font-size: 14px;
+  padding: 9px 16px;
+  min-height: 40px;
+}
 
 /* =========================
    CONTAINER PADRÃO
@@ -1501,6 +1600,24 @@ button{
   .hero-stat-row,
   .profissionais-grid{
     grid-template-columns:1fr;
+  }
+
+  .home-navbar .main-menu-wrap{
+    width: auto;
+    order: 2;
+    margin-left: auto;
+    margin-right: 0;
+  }
+
+  .home-navbar .actions{
+    width: 100%;
+    order: 3;
+  }
+
+  .home-navbar .actions .btn{
+    width: auto;
+    flex: 1;
+    min-width: 140px;
   }
 }
 

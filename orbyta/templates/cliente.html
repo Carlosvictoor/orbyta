@@ -17,8 +17,35 @@
 </head>
 <body>
 
-<header class="navbar">
-  <div class="logo">Orbyta 🪐</div>
+<header class="navbar home-navbar">
+  <div class="logo">
+    <a href="/" class="brand-link" aria-label="Voltar para a página inicial da Orbyta">
+      <span class="brand-badge">🪐</span>
+      <span class="brand-text">
+        <strong>Orbyta</strong>
+        <small>Agendamentos online</small>
+      </span>
+    </a>
+  </div>
+
+  <nav class="menu main-menu-wrap" aria-label="Menu principal">
+    <ul>
+      <li class="dropdown main-menu-dropdown">
+        <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Menu ▾</button>
+        <div class="dropdown-content" role="menu">
+          <a href="/negocios" role="menuitem">Negócios</a>
+          <a href="/planos" role="menuitem">Planos</a>
+          <a href="/#sobre" role="menuitem">A Orbyta</a>
+          <a href="/cliente" role="menuitem">Meus Agendamentos</a>
+          <hr class="menu-divider">
+          <a href="/negocios/saloes" role="menuitem">Salões de Beleza</a>
+          <a href="/negocios/barbearias" role="menuitem">Barbearias</a>
+          <a href="/negocios/clinicas" role="menuitem">Clínicas de Estética</a>
+          <a href="/negocios/studios" role="menuitem">Studios</a>
+        </div>
+      </li>
+    </ul>
+  </nav>
 
   <div class="actions">
     <a href="/negocios" class="btn outline">Negócios</a>
@@ -100,6 +127,24 @@
     </div>
   {% endif %}
 </div>
+
+<script>
+  const dropdown = document.querySelector(".dropdown");
+  const button = document.querySelector(".dropbtn");
+
+  if (dropdown && button) {
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isActive = dropdown.classList.toggle("active");
+      button.setAttribute("aria-expanded", String(isActive));
+    });
+
+    document.addEventListener("click", () => {
+      dropdown.classList.remove("active");
+      button.setAttribute("aria-expanded", "false");
+    });
+  }
+</script>
 
 </body>
 </html>
