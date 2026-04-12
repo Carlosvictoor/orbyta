@@ -24,6 +24,8 @@ services:
         value: "https://www.orbytaapp.com.br"
       - key: ORBYTA_DATA_DIR
         value: "/var/data/orbyta"
+      - key: ORBYTA_SEED_FROM_JSON
+        value: "0"
     disk:
       name: orbyta-data
       mountPath: /var/data/orbyta

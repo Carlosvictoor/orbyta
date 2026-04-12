@@ -4,6 +4,34 @@ import sqlite3
 
 from core.constants import DB_FILE
 
+
+def _env_bool(name, default=False):
+    raw = os.getenv(name)
+    if raw is None:
+        return default
+    return raw.strip().lower() in {"1", "true", "yes", "on"}
+
+
+def _deve_migrar_json_para_db():
+    """
+    Define se o bootstrap via arquivos JSON deve rodar.
+
+    Regra padrão:
+    - Desenvolvimento local (sem ORBYTA_DATA_DIR): migra JSON -> DB.
+    - Produção (com ORBYTA_DATA_DIR): NÃO migra, para evitar
+      ressuscitar dados antigos quando houver reinício/deploy.
+
+    Override:
+    - ORBYTA_SEED_FROM_JSON=1 força migração.
+    - ORBYTA_SEED_FROM_JSON=0 bloqueia migração.
+    """
+    seed_explicit = os.getenv("ORBYTA_SEED_FROM_JSON")
+    if seed_explicit is not None:
+        return _env_bool("ORBYTA_SEED_FROM_JSON", False)
+
+    using_persistent_data_dir = bool(os.getenv("ORBYTA_DATA_DIR", "").strip())
+    return not using_persistent_data_dir
+
 TABLE_SCHEMAS = {
     "usuarios": [
         "email",
@@ -356,7 +384,8 @@ def iniciar_banco_json(arquivos):
             _create_table(conn, tabela)
     conn.close()
 
-    _migrate_json_to_db(arquivos)
+    if _deve_migrar_json_para_db():
+        _migrate_json_to_db(arquivos)
 
 
 def carregar_json(nome):
