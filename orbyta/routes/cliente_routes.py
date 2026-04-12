@@ -239,6 +239,7 @@ def quero_ser_dono():
 
 
 @cliente_bp.route("/agendamento/confirmar/<token>")
+@cliente_bp.route("/a/c/<token>")
 def confirmar_agendamento(token):
     ag = carregar_json(AGENDAMENTOS_FILE)
     alvo = next((a for a in ag if a.get("confirmacao_token") == token), None)
@@ -266,6 +267,7 @@ def confirmar_agendamento(token):
 
 
 @cliente_bp.route("/agendamento/cancelar/<token>")
+@cliente_bp.route("/a/x/<token>")
 def cancelar_agendamento(token):
     ag = carregar_json(AGENDAMENTOS_FILE)
     alvo = next((a for a in ag if a.get("confirmacao_token") == token), None)

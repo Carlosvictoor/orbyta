@@ -85,8 +85,8 @@ def renderizar_template_lembrete(template: str, agendamento: dict, negocio: dict
         "profissional": agendamento.get("barbeiro") or "profissional",
         "telefone": agendamento.get("telefone") or "",
         "whatsapp_dono": whatsapp_dono,
-        "link_confirmar": f"{base_url}/agendamento/confirmar/{token}" if token else base_url,
-        "link_cancelar": f"{base_url}/agendamento/cancelar/{token}" if token else base_url,
+        "link_confirmar": f"{base_url}/a/c/{token}" if token else base_url,
+        "link_cancelar": f"{base_url}/a/x/{token}" if token else base_url,
     })
 
     return mensagem_base.format_map(valores)
