@@ -140,6 +140,12 @@ def painel():
         _enriquecer_whatsapp_agendamento(item, negocio, now)
 
     lembretes_manuais = [item for item in ag_do_negocio if item.get("pode_enviar_lembrete")]
+    agendados_hoje_com_telefone = [
+        item for item in ag_do_negocio
+        if item.get("data") == now.strftime("%Y-%m-%d")
+        and (item.get("telefone") or "").strip()
+        and (item.get("status_confirmacao") or "").strip().lower() != "cancelado"
+    ]
 
     negocio["whatsapp_link"] = _whatsapp_link(negocio.get("whatsapp"))
 
@@ -282,6 +288,7 @@ def painel():
         horarios_configurados=times,
         data_hoje=hoje,
         lembretes_manuais=lembretes_manuais[:8],
+        agendados_hoje_com_telefone=agendados_hoje_com_telefone[:30],
     )
 
 
@@ -501,15 +508,40 @@ def painel_whatsapp_teste():
         flash("Negócio não encontrado.")
         return redirect("/painel")
 
-    numero_destino = request.form.get("whatsapp_numero_teste", "").strip() or negocio.get("whatsapp_numero_envio") or negocio.get("whatsapp") or ""
-    if not numero_destino or not telefone_valido_br(numero_destino):
-        flash("Informe um WhatsApp válido para enviar o teste.")
-        return redirect("/painel")
+    numero_destino = ""
+    mensagem = ""
 
-    mensagem = (
-        f"Teste do WhatsApp da {negocio.get('nome', 'Orbyta')} ✅\n"
-        f"Se você recebeu esta mensagem, a configuração principal está pronta para produção."
-    )
+    agendamento_id = request.form.get("agendamento_teste_id", "").strip()
+    if agendamento_id:
+        ag = carregar_json(AGENDAMENTOS_FILE)
+        escolhido = next(
+            (
+                item for item in ag
+                if int(item.get("negocio_id", 0)) == negocio_id
+                and str(item.get("id", "")) == agendamento_id
+            ),
+            None,
+        )
+        if not escolhido:
+            flash("Agendamento selecionado não foi encontrado.")
+            return redirect("/painel")
+
+        numero_destino = (escolhido.get("telefone") or "").strip()
+        if not numero_destino or not telefone_valido_br(numero_destino):
+            flash("Esse cliente não possui WhatsApp válido cadastrado.")
+            return redirect("/painel")
+
+        mensagem = renderizar_template_lembrete(negocio.get("whatsapp_mensagem_template", ""), escolhido, negocio)
+    else:
+        numero_destino = request.form.get("whatsapp_numero_teste", "").strip() or negocio.get("whatsapp_numero_envio") or negocio.get("whatsapp") or ""
+        if not numero_destino or not telefone_valido_br(numero_destino):
+            flash("Selecione um agendamento do dia com WhatsApp válido.")
+            return redirect("/painel")
+
+        mensagem = (
+            f"Teste do WhatsApp da {negocio.get('nome', 'Orbyta')} ✅\n"
+            f"Se você recebeu esta mensagem, a configuração principal está pronta para produção."
+        )
 
     whatsapp_provider = (os.getenv("WHATSAPP_PROVIDER", "none") or "none").strip().lower()
     if whatsapp_provider in {"", "none"}:

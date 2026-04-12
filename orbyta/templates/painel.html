@@ -246,14 +246,14 @@
         </div>
 
         <div class="two-col">
-          <select class="input" name="profissional_id" required>
+          <select class="input" id="manual-profissional" name="profissional_id" required>
             <option value="">Selecione o profissional</option>
             {% for p in profs %}
-              <option value="{{ p.id }}">{{ p.nome }} • {{ p.categoria }}</option>
+              <option value="{{ p.id }}" data-nome="{{ p.nome }}">{{ p.nome }} • {{ p.categoria }}</option>
             {% endfor %}
           </select>
 
-          <select class="input" name="servico_id" required>
+          <select class="input" id="manual-servico" name="servico_id" required>
             <option value="">Selecione o serviço</option>
             {% for s in servs %}
               <option value="{{ s.id }}">{{ s.nome }} {% if s.preco %}• R$ {{ s.preco }}{% endif %}</option>
@@ -262,10 +262,10 @@
         </div>
 
         <div class="two-col">
-          <input class="input" type="date" name="data" value="{{ data_hoje }}" required>
+          <input class="input" id="manual-data" type="date" name="data" value="{{ data_hoje }}" required>
 
-          <select class="input" name="horario" required>
-            <option value="">Selecione o horário</option>
+          <select class="input" id="manual-horario" name="horario" required>
+            <option value="">Selecione profissional, serviço e data</option>
             {% for h in horarios_configurados %}
               <option value="{{ h }}">{{ h }}</option>
             {% endfor %}
@@ -295,10 +295,7 @@
         Ativar envio automático no WhatsApp
       </label>
 
-      <div class="two-col" style="margin-top:0;">
-        <input class="input" name="whatsapp_numero_envio" placeholder="WhatsApp do estabelecimento (com DDD)" value="{{ negocio.get('whatsapp_numero_envio', negocio.get('whatsapp', '')) }}">
-        <input class="input" name="whatsapp_numero_teste" placeholder="Número para enviar um teste agora">
-      </div>
+      <input class="input" name="whatsapp_numero_envio" placeholder="WhatsApp do estabelecimento (com DDD)" value="{{ negocio.get('whatsapp_numero_envio', negocio.get('whatsapp', '')) }}">
 
       <textarea name="whatsapp_mensagem_template" class="input" rows="6" style="min-height:140px; resize:vertical;">{{ negocio.get('whatsapp_mensagem_template', 'Olá {nome}! Aqui é da {negocio}. Seu atendimento está marcado para {data} às {horario} com {profissional} ({servico}). Fale conosco em {whatsapp_dono}.\n\n✅ Confirmar: {link_confirmar}\n❌ Cancelar: {link_cancelar}') }}</textarea>
 
@@ -307,9 +304,27 @@
         <code>{servico}</code>, <code>{profissional}</code>, <code>{whatsapp_dono}</code>, <code>{link_confirmar}</code> e <code>{link_cancelar}</code>.
       </p>
 
+      <div class="panel" style="margin-top:12px; background:rgba(255,255,255,.02);">
+        <div class="panel-head">
+          <h2 style="font-size:18px; margin:0;">Lista de agendados de hoje</h2>
+          <span class="small-muted">Escolha o cliente e abra o WhatsApp com a mensagem pronta</span>
+        </div>
+
+        {% if agendados_hoje_com_telefone and agendados_hoje_com_telefone|length > 0 %}
+          <select class="input" name="agendamento_teste_id">
+            <option value="">Selecione um agendamento de hoje</option>
+            {% for a in agendados_hoje_com_telefone %}
+              <option value="{{ a.id }}">{{ a.horario }} • {{ a.nome }} • {{ a.telefone }} • {{ a.servico or 'Serviço' }}</option>
+            {% endfor %}
+          </select>
+        {% else %}
+          <div class="small-muted">Hoje não há clientes com WhatsApp válido para envio rápido.</div>
+        {% endif %}
+      </div>
+
       <div class="biz-actions" style="margin-top:12px;">
         <button type="submit">Salvar mensagem automática</button>
-        <button type="submit" formaction="/painel/whatsapp/teste" formmethod="post" class="link-btn">Enviar teste</button>
+        <button type="submit" formaction="/painel/whatsapp/teste" formmethod="post" class="link-btn">Enviar para cliente selecionado</button>
       </div>
     </form>
   </div>
@@ -385,6 +400,10 @@
 <script>
   const q = document.getElementById("q");
   const tbl = document.getElementById("tbl");
+  const manualProfissional = document.getElementById("manual-profissional");
+  const manualServico = document.getElementById("manual-servico");
+  const manualData = document.getElementById("manual-data");
+  const manualHorario = document.getElementById("manual-horario");
 
   if (q && tbl) {
     q.addEventListener("input", () => {
@@ -394,6 +413,58 @@
         tr.style.display = txt.includes(term) ? "" : "none";
       });
     });
+  }
+
+  async function carregarHorariosDisponiveisPainel() {
+    if (!manualProfissional || !manualServico || !manualData || !manualHorario) {
+      return;
+    }
+
+    const profissionalOption = manualProfissional.options[manualProfissional.selectedIndex];
+    const profissionalNome = profissionalOption ? (profissionalOption.dataset.nome || "") : "";
+    const servicoId = manualServico.value;
+    const data = manualData.value;
+
+    if (!profissionalNome || !servicoId || !data) {
+      manualHorario.innerHTML = '<option value="">Selecione profissional, serviço e data</option>';
+      return;
+    }
+
+    manualHorario.innerHTML = '<option value="">Carregando horários...</option>';
+
+    try {
+      const params = new URLSearchParams({
+        negocio_id: '{{ negocio.id }}',
+        barbeiro: profissionalNome,
+        servico_id: servicoId,
+        data: data,
+      });
+      const resp = await fetch(`/api/horarios-disponiveis?${params.toString()}`);
+      const dataResp = await resp.json();
+      const times = Array.isArray(dataResp.times) ? dataResp.times : [];
+
+      if (!times.length) {
+        manualHorario.innerHTML = '<option value="">Sem horários livres para esta seleção</option>';
+        return;
+      }
+
+      manualHorario.innerHTML = '<option value="">Selecione o horário</option>';
+      times.forEach((h) => {
+        const opt = document.createElement('option');
+        opt.value = h;
+        opt.textContent = h;
+        manualHorario.appendChild(opt);
+      });
+    } catch (e) {
+      manualHorario.innerHTML = '<option value="">Não foi possível carregar os horários</option>';
+    }
+  }
+
+  if (manualProfissional && manualServico && manualData && manualHorario) {
+    manualProfissional.addEventListener("change", carregarHorariosDisponiveisPainel);
+    manualServico.addEventListener("change", carregarHorariosDisponiveisPainel);
+    manualData.addEventListener("change", carregarHorariosDisponiveisPainel);
+    carregarHorariosDisponiveisPainel();
   }
 </script>
 
