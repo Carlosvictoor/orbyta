@@ -626,6 +626,13 @@ def painel_financeiro():
     except Exception:
         mes = datetime.now().strftime("%Y-%m")
 
+    dia = request.args.get("dia", "").strip()
+    try:
+        datetime.strptime(dia, "%Y-%m-%d")
+        mes = dia[:7]  # dia prevalece sobre mes
+    except Exception:
+        dia = ""
+
     if request.method == "POST":
         tipo = request.form.get("tipo", "").strip()
         if tipo not in ["entrada", "saida"]:
@@ -672,6 +679,8 @@ def painel_financeiro():
 
     itens = financeiro_do_negocio(negocio_id)
     itens_mes = [x for x in itens if x.get("data", "")[:7] == mes]
+    if dia:
+        itens_mes = [x for x in itens_mes if x.get("data", "") == dia]
     itens_mes.sort(key=lambda x: (x.get("data", ""), x.get("tipo", "")), reverse=True)
 
     ag_all = carregar_json(AGENDAMENTOS_FILE)
@@ -681,6 +690,8 @@ def painel_financeiro():
         and a.get("data", "")[:7] == mes
         and (a.get("status_confirmacao") or "").strip().lower() != "cancelado"
     ]
+    if dia:
+        ag_mes = [a for a in ag_mes if a.get("data", "") == dia]
 
     auto_entradas = []
     for a in ag_mes:
@@ -750,6 +761,7 @@ def painel_financeiro():
         "financeiro.html",
         negocio=negocio,
         mes=mes,
+        dia=dia,
         itens=itens_tabela,
         entradas=round(entradas, 2),
         saidas=round(saidas, 2),
