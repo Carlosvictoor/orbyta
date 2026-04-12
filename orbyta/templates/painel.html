@@ -275,6 +275,7 @@
         <div class="small-muted" style="margin-top:8px;">
           O sistema confirma apenas se o horário estiver livre para o profissional escolhido.
         </div>
+        <div id="manual-horario-status" style="margin-top:8px; padding:10px 12px; border-radius:10px; display:none; font-size:13px;"></div>
 
         <button class="btn primary" type="submit" style="width:100%; margin-top:10px;">Salvar agendamento manual</button>
       </form>
@@ -404,6 +405,40 @@
   const manualServico = document.getElementById("manual-servico");
   const manualData = document.getElementById("manual-data");
   const manualHorario = document.getElementById("manual-horario");
+  const manualHorarioStatus = document.getElementById("manual-horario-status");
+
+  function atualizarStatusHorarioPainel(texto, tipo) {
+    if (!manualHorarioStatus) {
+      return;
+    }
+
+    if (!texto) {
+      manualHorarioStatus.style.display = "none";
+      manualHorarioStatus.textContent = "";
+      return;
+    }
+
+    manualHorarioStatus.style.display = "block";
+    manualHorarioStatus.textContent = texto;
+
+    if (tipo === "ok") {
+      manualHorarioStatus.style.background = "rgba(0, 200, 83, .15)";
+      manualHorarioStatus.style.border = "1px solid rgba(0, 200, 83, .45)";
+      manualHorarioStatus.style.color = "#9ff5bf";
+      return;
+    }
+
+    if (tipo === "warn") {
+      manualHorarioStatus.style.background = "rgba(255, 152, 0, .16)";
+      manualHorarioStatus.style.border = "1px solid rgba(255, 152, 0, .45)";
+      manualHorarioStatus.style.color = "#ffd59d";
+      return;
+    }
+
+    manualHorarioStatus.style.background = "rgba(255, 82, 82, .16)";
+    manualHorarioStatus.style.border = "1px solid rgba(255, 82, 82, .45)";
+    manualHorarioStatus.style.color = "#ffb5b5";
+  }
 
   if (q && tbl) {
     q.addEventListener("input", () => {
@@ -427,10 +462,12 @@
 
     if (!profissionalNome || !servicoId || !data) {
       manualHorario.innerHTML = '<option value="">Selecione profissional, serviço e data</option>';
+      atualizarStatusHorarioPainel("Selecione profissional, serviço e data para ver os horários livres.", "warn");
       return;
     }
 
     manualHorario.innerHTML = '<option value="">Carregando horários...</option>';
+    atualizarStatusHorarioPainel("Carregando horários disponíveis...", "ok");
 
     try {
       const params = new URLSearchParams({
@@ -445,6 +482,7 @@
 
       if (!times.length) {
         manualHorario.innerHTML = '<option value="">Sem horários livres para esta seleção</option>';
+        atualizarStatusHorarioPainel("Sem horários livres nessa combinação. Tente outra data, serviço ou profissional.", "warn");
         return;
       }
 
@@ -455,8 +493,10 @@
         opt.textContent = h;
         manualHorario.appendChild(opt);
       });
+      atualizarStatusHorarioPainel(`${times.length} horário(s) disponível(is).`, "ok");
     } catch (e) {
       manualHorario.innerHTML = '<option value="">Não foi possível carregar os horários</option>';
+      atualizarStatusHorarioPainel("Falha ao consultar horários. Tente novamente em instantes.", "error");
     }
   }
 

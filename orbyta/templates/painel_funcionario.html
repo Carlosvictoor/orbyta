@@ -103,6 +103,7 @@
             O sistema só salva se o horário estiver realmente livre para você.
           </div>
         </div>
+        <div id="func-horario-status" style="margin-top:8px; padding:10px 12px; border-radius:10px; display:none; font-size:13px;"></div>
 
         <button class="btn primary" type="submit" style="width:100%; margin-top:10px;">Salvar agendamento manual</button>
       </form>
@@ -255,6 +256,40 @@
   const funcServico = document.getElementById("func-servico");
   const funcData = document.getElementById("func-data");
   const funcHorario = document.getElementById("func-horario");
+  const funcHorarioStatus = document.getElementById("func-horario-status");
+
+  function atualizarStatusHorarioFuncionario(texto, tipo) {
+    if (!funcHorarioStatus) {
+      return;
+    }
+
+    if (!texto) {
+      funcHorarioStatus.style.display = "none";
+      funcHorarioStatus.textContent = "";
+      return;
+    }
+
+    funcHorarioStatus.style.display = "block";
+    funcHorarioStatus.textContent = texto;
+
+    if (tipo === "ok") {
+      funcHorarioStatus.style.background = "rgba(0, 200, 83, .15)";
+      funcHorarioStatus.style.border = "1px solid rgba(0, 200, 83, .45)";
+      funcHorarioStatus.style.color = "#9ff5bf";
+      return;
+    }
+
+    if (tipo === "warn") {
+      funcHorarioStatus.style.background = "rgba(255, 152, 0, .16)";
+      funcHorarioStatus.style.border = "1px solid rgba(255, 152, 0, .45)";
+      funcHorarioStatus.style.color = "#ffd59d";
+      return;
+    }
+
+    funcHorarioStatus.style.background = "rgba(255, 82, 82, .16)";
+    funcHorarioStatus.style.border = "1px solid rgba(255, 82, 82, .45)";
+    funcHorarioStatus.style.color = "#ffb5b5";
+  }
 
   async function carregarHorariosDisponiveisFuncionario() {
     if (!funcServico || !funcData || !funcHorario) {
@@ -266,10 +301,12 @@
 
     if (!servicoId || !data) {
       funcHorario.innerHTML = '<option value="">Selecione serviço e data</option>';
+      atualizarStatusHorarioFuncionario("Selecione serviço e data para listar os horários livres.", "warn");
       return;
     }
 
     funcHorario.innerHTML = '<option value="">Carregando horários...</option>';
+    atualizarStatusHorarioFuncionario("Carregando horários disponíveis...", "ok");
 
     try {
       const params = new URLSearchParams({
@@ -285,6 +322,7 @@
 
       if (!times.length) {
         funcHorario.innerHTML = '<option value="">Sem horários livres para esta seleção</option>';
+        atualizarStatusHorarioFuncionario("Sem horários livres para essa seleção. Tente outra data ou serviço.", "warn");
         return;
       }
 
@@ -295,8 +333,10 @@
         opt.textContent = h;
         funcHorario.appendChild(opt);
       });
+      atualizarStatusHorarioFuncionario(`${times.length} horário(s) disponível(is).`, "ok");
     } catch (err) {
       funcHorario.innerHTML = '<option value="">Não foi possível carregar os horários</option>';
+      atualizarStatusHorarioFuncionario("Falha ao consultar horários. Tente novamente.", "error");
     }
   }
 
