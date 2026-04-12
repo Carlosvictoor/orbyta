@@ -34,7 +34,10 @@ def _bootstrap_admin():
     admin_email = os.getenv("ORBYTA_ADMIN_EMAIL", "admin@orbyta.app").strip().lower()
     admin_senha = os.getenv("ORBYTA_ADMIN_PASSWORD", "Orbyta@2026").strip()
 
+    print(f"[bootstrap_admin] email={admin_email!r} senha_definida={'sim' if admin_senha else 'nao'}")
+
     if not admin_email or not admin_senha:
+        print("[bootstrap_admin] sem credenciais, pulando")
         return
 
     try:
@@ -42,7 +45,6 @@ def _bootstrap_admin():
         u = next((x for x in usuarios if (x.get("email") or "").strip().lower() == admin_email), None)
 
         if u is None:
-            # Cria conta admin do zero
             usuarios.append({
                 "email": admin_email,
                 "senha": hash_senha(admin_senha),
@@ -56,13 +58,16 @@ def _bootstrap_admin():
                 "mp_pix_payment_id": None,
             })
             salvar_json(USUARIOS_FILE, usuarios)
+            print(f"[bootstrap_admin] admin CRIADO: {admin_email}")
         elif u.get("tipo") != "admin" or not verificar_senha(admin_senha, u.get("senha") or ""):
-            # Corrige tipo e/ou senha se divergirem
             u["tipo"] = "admin"
             u["senha"] = hash_senha(admin_senha)
             salvar_json(USUARIOS_FILE, usuarios)
-    except Exception:
-        pass  # Nunca impede a subida do app
+            print(f"[bootstrap_admin] admin CORRIGIDO: {admin_email}")
+        else:
+            print(f"[bootstrap_admin] admin OK: {admin_email}")
+    except Exception as exc:
+        print(f"[bootstrap_admin] ERRO: {exc}")
 
 
 def create_app():
@@ -84,7 +89,14 @@ def create_app():
 
     @app.get("/health")
     def health():
-        return jsonify({"status": "ok", "app": "orbyta"}), 200
+        from core.constants import USUARIOS_FILE
+        from core.json_db import carregar_json
+        try:
+            usuarios = carregar_json(USUARIOS_FILE)
+            admins = [u.get("email") for u in usuarios if u.get("tipo") == "admin"]
+        except Exception as exc:
+            admins = [f"ERRO: {exc}"]
+        return jsonify({"status": "ok", "app": "orbyta", "admins": admins}), 200
 
     iniciar_banco_json(JSON_FILES)
     _bootstrap_admin()
