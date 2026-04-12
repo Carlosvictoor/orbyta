@@ -202,7 +202,25 @@
   const pwaInstallHint = document.getElementById("pwa-install-hint");
   const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const pwaInstalledKey = "orbyta_pwa_instalado";
   let deferredInstallPrompt = null;
+
+  function marcarPwaComoInstalado() {
+    try {
+      window.localStorage.setItem(pwaInstalledKey, "1");
+    } catch (_) {
+      // Sem acesso ao localStorage, segue sem persistir.
+    }
+  }
+
+  function pwaJaFoiInstalado() {
+    if (isStandalone) return true;
+    try {
+      return window.localStorage.getItem(pwaInstalledKey) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
 
   function mostrarHintInstalacao(texto) {
     if (!pwaInstallHint) return;
@@ -242,7 +260,8 @@
     });
   }
 
-  if (isStandalone) {
+  if (pwaJaFoiInstalado()) {
+    marcarPwaComoInstalado();
     esconderBotoesInstalacao();
   } else if (isIos) {
     abrirBotaoInstalacao("⬇ Instalar no iPhone");
@@ -275,6 +294,7 @@
       deferredInstallPrompt = null;
 
       if (escolha.outcome === "accepted") {
+        marcarPwaComoInstalado();
         esconderBotoesInstalacao();
         mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
       } else {
@@ -284,6 +304,7 @@
   });
 
   window.addEventListener("appinstalled", () => {
+    marcarPwaComoInstalado();
     esconderBotoesInstalacao();
     mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
   });
