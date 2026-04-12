@@ -101,7 +101,12 @@
     {% else %}
       <a href="/cliente" class="btn outline">Ver meus agendamentos</a>
     {% endif %}
+    <button id="install-pwa-btn" type="button" class="btn pwa-install-btn" hidden>
+      ⬇ Instalar app
+    </button>
   </div>
+
+  <p id="pwa-install-hint" class="pwa-install-hint" hidden></p>
 
   {% if session.get("usuario") %}
     <p style="opacity:.8; margin-top:14px;">
@@ -190,16 +195,85 @@
 <script>
   const dropdown = document.querySelector(".dropdown");
   const button = document.querySelector(".dropbtn");
+  const installPwaBtn = document.getElementById("install-pwa-btn");
+  const pwaInstallHint = document.getElementById("pwa-install-hint");
+  const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  let deferredInstallPrompt = null;
 
-  button.addEventListener("click", (e) => {
-    e.stopPropagation();
-    const isActive = dropdown.classList.toggle("active");
-    button.setAttribute("aria-expanded", String(isActive));
+  function mostrarHintInstalacao(texto) {
+    if (!pwaInstallHint) return;
+    pwaInstallHint.textContent = texto;
+    pwaInstallHint.hidden = false;
+  }
+
+  function esconderHintInstalacao() {
+    if (!pwaInstallHint) return;
+    pwaInstallHint.hidden = true;
+    pwaInstallHint.textContent = "";
+  }
+
+  function abrirBotaoInstalacao(texto) {
+    if (!installPwaBtn) return;
+    installPwaBtn.textContent = texto;
+    installPwaBtn.hidden = false;
+  }
+
+  if (dropdown && button) {
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isActive = dropdown.classList.toggle("active");
+      button.setAttribute("aria-expanded", String(isActive));
+    });
+
+    document.addEventListener("click", () => {
+      dropdown.classList.remove("active");
+      button.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  if (isStandalone) {
+    if (installPwaBtn) installPwaBtn.hidden = true;
+  } else if (isIos) {
+    abrirBotaoInstalacao("⬇ Instalar no iPhone");
+    mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    abrirBotaoInstalacao("⬇ Baixar app Orbyta");
+    esconderHintInstalacao();
   });
 
-  document.addEventListener("click", () => {
-    dropdown.classList.remove("active");
-    button.setAttribute("aria-expanded", "false");
+  if (installPwaBtn) {
+    installPwaBtn.addEventListener("click", async () => {
+      if (isIos && !deferredInstallPrompt) {
+        mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
+        return;
+      }
+
+      if (!deferredInstallPrompt) {
+        mostrarHintInstalacao("Seu navegador não liberou a instalação automática agora. Continue navegando e tente novamente.");
+        return;
+      }
+
+      deferredInstallPrompt.prompt();
+      const escolha = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+
+      if (escolha.outcome === "accepted") {
+        installPwaBtn.hidden = true;
+        mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
+      } else {
+        mostrarHintInstalacao("Sem problemas. Você pode instalar depois por este mesmo botão.");
+      }
+    });
+  }
+
+  window.addEventListener("appinstalled", () => {
+    if (installPwaBtn) installPwaBtn.hidden = true;
+    mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
   });
 </script>
 

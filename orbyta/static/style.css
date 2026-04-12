@@ -412,6 +412,29 @@ button:hover{ background:#00e676; }
   justify-content: center;
   flex-wrap: wrap;
 }
+.pwa-install-btn{
+  border: 1px solid rgba(255,255,255,.2);
+  background: linear-gradient(135deg, rgba(255,255,255,.1), rgba(255,255,255,.03));
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(0,0,0,.22);
+  transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+}
+.pwa-install-btn:hover{
+  transform: translateY(-1px);
+  border-color: rgba(0,230,118,.55);
+  box-shadow: 0 14px 30px rgba(0, 200, 83, .22);
+}
+.pwa-install-hint{
+  margin: 14px auto 0;
+  max-width: 760px;
+  padding: 10px 14px;
+  border-radius: 12px;
+  border: 1px solid rgba(0,230,118,.32);
+  background: rgba(0,200,83,.12);
+  color: rgba(255,255,255,.95);
+  font-size: 14px;
+  line-height: 1.45;
+}
 
 .home-section{
   margin-top: 60px;
@@ -1644,5 +1667,9 @@ button{
   .btn,
   .link-btn{
     width:100%;
+  }
+  .pwa-install-hint{
+    font-size: 13px;
+    text-align: left;
   }
 }
