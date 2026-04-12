@@ -1,13 +1,13 @@
 /* =============================================================
    Orbyta — Service Worker
    Estratégia:
-   - Estáticos (/static/, /manifest.json): cache-first
+  - Estáticos (/static/, /manifest.json): stale-while-revalidate
    - Navegação HTML: network-first → offline fallback
    - APIs (/api/*): network-only (nunca sirva cache de dados)
    - Resto: stale-while-revalidate
    ============================================================= */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `orbyta-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
@@ -56,9 +56,9 @@ self.addEventListener('fetch', event => {
   // API: network-only (dados sempre frescos)
   if (url.pathname.startsWith('/api/')) return;
 
-  // Arquivos estáticos e manifest: cache-first
+  // Arquivos estáticos e manifest: stale-while-revalidate
   if (url.pathname.startsWith('/static/') || url.pathname === '/manifest.json') {
-    event.respondWith(cacheFirst(request));
+    event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
@@ -73,17 +73,6 @@ self.addEventListener('fetch', event => {
 });
 
 // ── Estratégias ──────────────────────────────────────────────
-
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) return cached;
-  const response = await fetch(request);
-  if (response.ok) {
-    const cache = await caches.open(CACHE_NAME);
-    cache.put(request, response.clone());
-  }
-  return response;
-}
 
 async function networkFirstWithOfflineFallback(request) {
   try {
