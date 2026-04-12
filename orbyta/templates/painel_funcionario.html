@@ -82,15 +82,15 @@
         </div>
 
         <div class="two-col">
-          <select class="input" name="servico_id" required>
+          <select class="input" id="func-servico" name="servico_id" required>
             <option value="">Selecione o serviço</option>
             {% for s in servs %}
               <option value="{{ s.id }}">{{ s.nome }} {% if s.preco %}• R$ {{ s.preco }}{% endif %}</option>
             {% endfor %}
           </select>
 
-          <select class="input" name="horario" required>
-            <option value="">Selecione o horário</option>
+          <select class="input" id="func-horario" name="horario" required>
+            <option value="">Selecione serviço e data</option>
             {% for h in horarios_configurados %}
               <option value="{{ h }}">{{ h }}</option>
             {% endfor %}
@@ -98,7 +98,7 @@
         </div>
 
         <div class="two-col">
-          <input class="input" type="date" name="data" value="{{ data_hoje }}" required>
+          <input class="input" id="func-data" type="date" name="data" value="{{ data_hoje }}" required>
           <div class="small-muted" style="display:flex; align-items:center; padding:12px 4px;">
             O sistema só salva se o horário estiver realmente livre para você.
           </div>
@@ -252,6 +252,60 @@
 
 <script>
   const goMes = document.getElementById("goMes");
+  const funcServico = document.getElementById("func-servico");
+  const funcData = document.getElementById("func-data");
+  const funcHorario = document.getElementById("func-horario");
+
+  async function carregarHorariosDisponiveisFuncionario() {
+    if (!funcServico || !funcData || !funcHorario) {
+      return;
+    }
+
+    const servicoId = funcServico.value;
+    const data = funcData.value;
+
+    if (!servicoId || !data) {
+      funcHorario.innerHTML = '<option value="">Selecione serviço e data</option>';
+      return;
+    }
+
+    funcHorario.innerHTML = '<option value="">Carregando horários...</option>';
+
+    try {
+      const params = new URLSearchParams({
+        negocio_id: '{{ negocio.id }}',
+        barbeiro: '{{ profissional.nome }}',
+        servico_id: servicoId,
+        data: data,
+      });
+
+      const resp = await fetch(`/api/horarios-disponiveis?${params.toString()}`);
+      const payload = await resp.json();
+      const times = Array.isArray(payload.times) ? payload.times : [];
+
+      if (!times.length) {
+        funcHorario.innerHTML = '<option value="">Sem horários livres para esta seleção</option>';
+        return;
+      }
+
+      funcHorario.innerHTML = '<option value="">Selecione o horário</option>';
+      times.forEach((h) => {
+        const opt = document.createElement("option");
+        opt.value = h;
+        opt.textContent = h;
+        funcHorario.appendChild(opt);
+      });
+    } catch (err) {
+      funcHorario.innerHTML = '<option value="">Não foi possível carregar os horários</option>';
+    }
+  }
+
+  if (funcServico && funcData && funcHorario) {
+    funcServico.addEventListener("change", carregarHorariosDisponiveisFuncionario);
+    funcData.addEventListener("change", carregarHorariosDisponiveisFuncionario);
+    carregarHorariosDisponiveisFuncionario();
+  }
+
   if (goMes) {
     goMes.onclick = () => {
       const m = (document.getElementById("mes")?.value || "").trim();
