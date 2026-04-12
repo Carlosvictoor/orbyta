@@ -21,7 +21,7 @@ services:
       - key: ENABLE_REMINDER_WORKER
         value: "1"
       - key: APP_BASE_URL
-        value: "https://orbyta-agendamentos.onrender.com"
+        value: "https://www.orbytaapp.com.br"
       - key: ORBYTA_DATA_DIR
         value: "/var/data/orbyta"
     disk:

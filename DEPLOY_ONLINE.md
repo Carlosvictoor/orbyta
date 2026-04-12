@@ -9,7 +9,7 @@ Antes de subir, confirme:
 - `SESSION_COOKIE_SECURE=1`
 - `PREFERRED_URL_SCHEME=https`
 - `TRUST_PROXY=1`
-- `APP_BASE_URL=https://seu-dominio.com`
+- `APP_BASE_URL=https://www.orbytaapp.com.br`
 - `MP_ACCESS_TOKEN` e `MP_PUBLIC_KEY` preenchidos
 - `WHATSAPP_PROVIDER` configurado (`twilio` ou `webhook`)
 
@@ -30,7 +30,7 @@ Antes de subir, confirme:
 No painel do Mercado Pago, configure o webhook para:
 
 ```text
-https://seu-dominio.com/webhook/mercadopago
+https://www.orbytaapp.com.br/webhook/mercadopago
 ```
 
 Fluxos disponíveis no sistema:
