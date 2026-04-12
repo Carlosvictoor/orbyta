@@ -14,6 +14,76 @@
   <meta name="apple-mobile-web-app-title" content="Orbyta">
   <script defer src="/static/pwa-register.js"></script>
   <link rel="stylesheet" href="/static/style.css" />
+  <style>
+    .month-picker-wrap { position: relative; display: inline-block; }
+    .month-picker-toggle {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 190px;
+      justify-content: space-between;
+      font-size: .95rem;
+      padding: 9px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+    }
+    .month-picker-arrow { font-size: .75rem; opacity: .55; transition: transform .2s; }
+    .month-picker-wrap.open .month-picker-arrow { transform: rotate(180deg); }
+    .month-picker-dropdown {
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: var(--surface, #1e1e2e);
+      border: 1px solid rgba(255,255,255,.13);
+      border-radius: 16px;
+      padding: 18px;
+      z-index: 999;
+      min-width: 270px;
+      box-shadow: 0 16px 48px rgba(0,0,0,.45);
+    }
+    .month-picker-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .month-picker-year { font-weight: 700; font-size: 1.05rem; letter-spacing: .02em; }
+    .month-picker-nav {
+      background: none;
+      border: 1px solid rgba(255,255,255,.15);
+      border-radius: 8px;
+      width: 34px;
+      height: 34px;
+      cursor: pointer;
+      color: inherit;
+      font-size: 1.15rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background .15s;
+    }
+    .month-picker-nav:hover { background: rgba(255,255,255,.1); }
+    .month-picker-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; }
+    .mpk-month {
+      background: rgba(255,255,255,.05);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 10px;
+      padding: 9px 4px;
+      cursor: pointer;
+      color: inherit;
+      font-size: .87rem;
+      text-align: center;
+      transition: background .15s, border-color .15s, color .15s;
+    }
+    .mpk-month:hover { background: rgba(249,115,22,.2); border-color: rgba(249,115,22,.45); }
+    .mpk-month.mpk-ativo {
+      background: rgba(249,115,22,.35);
+      border-color: #f97316;
+      font-weight: 700;
+      color: #fff;
+    }
+    .mpk-month.mpk-hoje { border-style: dashed; border-color: rgba(249,115,22,.4); }
+  </style>
 </head>
 <body>
 
@@ -44,13 +114,25 @@
 
   <div class="panel">
     <div class="panel-head">
-      <h2>Mês</h2>
+      <h2>Período</h2>
       <div class="filters">
-        <input class="input" id="mes" value="{{ mes }}" placeholder="YYYY-MM" style="width:140px">
-        <button class="btn primary" id="goMes" type="button">Aplicar</button>
+        <div class="month-picker-wrap" id="monthPickerWrap">
+          <button class="btn outline month-picker-toggle" id="monthPickerToggle" type="button"
+                  aria-haspopup="true" aria-expanded="false">
+            <span id="monthPickerLabel">Carregando…</span>
+            <span class="month-picker-arrow">▾</span>
+          </button>
+          <div class="month-picker-dropdown" id="monthPickerDropdown" hidden>
+            <div class="month-picker-header">
+              <button class="month-picker-nav" id="mpkPrevYear" type="button" aria-label="Ano anterior">‹</button>
+              <span class="month-picker-year" id="mpkYear"></span>
+              <button class="month-picker-nav" id="mpkNextYear" type="button" aria-label="Próximo ano">›</button>
+            </div>
+            <div class="month-picker-grid" id="mpkGrid"></div>
+          </div>
+        </div>
       </div>
     </div>
-    <div class="small-muted">Dica: use 2026-03, 2026-04…</div>
   </div>
 
   <div class="panel" style="margin-top:12px;">
@@ -246,15 +328,78 @@
 </script>
 
 <script>
-  const goMes = document.getElementById("goMes");
-  if (goMes) {
-    goMes.onclick = () => {
-      const m = (document.getElementById("mes")?.value || "").trim();
-      if (m) {
-        window.location.href = `/painel/financeiro?mes=${encodeURIComponent(m)}`;
-      }
-    };
-  }
+  // ── Month Picker ────────────────────────────────────────────────────────────
+  (function () {
+    const MES_ATUAL = "{{ mes }}"; // YYYY-MM vindo do servidor
+    const partes = MES_ATUAL.split("-").map(Number);
+    const anoSel  = partes[0] || new Date().getFullYear();
+    const mesSel  = partes[1] || (new Date().getMonth() + 1); // 1-12
+    const anoHoje = new Date().getFullYear();
+    const mesHoje = new Date().getMonth() + 1;
+
+    const NOMES_CURTOS = ["Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez"];
+    const NOMES_COMPLETOS = ["Janeiro","Fevereiro","Março","Abril","Maio","Junho",
+                             "Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"];
+
+    let pickerAno = anoSel;
+
+    const wrap     = document.getElementById("monthPickerWrap");
+    const toggle   = document.getElementById("monthPickerToggle");
+    const dropdown = document.getElementById("monthPickerDropdown");
+    const label    = document.getElementById("monthPickerLabel");
+    const yearEl   = document.getElementById("mpkYear");
+    const grid     = document.getElementById("mpkGrid");
+
+    function atualizarLabel() {
+      if (label) label.textContent = `${NOMES_COMPLETOS[mesSel - 1]} ${anoSel}`;
+    }
+
+    function renderGrid() {
+      if (!grid || !yearEl) return;
+      yearEl.textContent = pickerAno;
+      grid.innerHTML = NOMES_CURTOS.map((nome, i) => {
+        const m = i + 1;
+        const isAtivo = (m === mesSel && pickerAno === anoSel);
+        const isHoje  = (m === mesHoje && pickerAno === anoHoje);
+        const cls = ["mpk-month", isAtivo ? "mpk-ativo" : "", (!isAtivo && isHoje) ? "mpk-hoje" : ""].filter(Boolean).join(" ");
+        const val = `${pickerAno}-${String(m).padStart(2, "0")}`;
+        return `<button type="button" class="${cls}" data-val="${val}">${nome}</button>`;
+      }).join("");
+      grid.querySelectorAll(".mpk-month").forEach(btn => {
+        btn.addEventListener("click", () => {
+          window.location.href = `/painel/financeiro?mes=${btn.dataset.val}`;
+        });
+      });
+    }
+
+    atualizarLabel();
+
+    if (toggle && dropdown && wrap) {
+      toggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const opening = dropdown.hidden;
+        dropdown.hidden = !opening;
+        toggle.setAttribute("aria-expanded", String(opening));
+        wrap.classList.toggle("open", opening);
+        if (opening) { pickerAno = anoSel; renderGrid(); }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (!wrap.contains(e.target)) {
+          dropdown.hidden = true;
+          toggle.setAttribute("aria-expanded", "false");
+          wrap.classList.remove("open");
+        }
+      });
+    }
+
+    document.getElementById("mpkPrevYear")?.addEventListener("click", (e) => {
+      e.stopPropagation(); pickerAno--; renderGrid();
+    });
+    document.getElementById("mpkNextYear")?.addEventListener("click", (e) => {
+      e.stopPropagation(); pickerAno++; renderGrid();
+    });
+  })();
 
   const q = document.getElementById("q");
   const tbl = document.getElementById("tbl");
