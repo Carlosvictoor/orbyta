@@ -1,24 +1,33 @@
 [
     {
         "email": "victorjg10@hotmail.com",
-        "senha": "scrypt:32768:8:1$ztzbpVHqT959UQqs$c8dc2aed91321013e8bd4dc752e38e7382e8214d9732447e0d798e7a179c5344dbe29b0ca238763f62c8d0d02c0048ae48855ff0a37a71bf02dc210c1f3d5b0b",
-        "tipo": "cliente",
+        "senha": "scrypt:32768:8:1$V8OExEyepeRrbeGx$eed2576afe5dbe579745551523c5039aee602712badf1efe442cdfc9ba662025f061916c29b82587cac769fbe8086f02e0b283271cde299039edf6963c2a0d26",
+        "tipo": "admin",
         "negocio_id": null,
+        "profissional_id": null,
+        "assinatura_status": null,
+        "trial_ate": null,
+        "mp_subscription_id": null,
+        "mp_pix_payment_id": null,
+        "telefone": ""
+    },
+    {
+        "email": "victorjg10@admin.com",
+        "senha": "scrypt:32768:8:1$ll1PlhUDJpB26Lp5$4ab562d74ac2083cf89a96c495565698eb97e9bda7de8590402bf4bd2d3fb3591d7eb128e8e8052d1471b77bcf2c75c2d80c6ede12ffa510ab0cfe7307841123",
+        "tipo": "admin",
+        "negocio_id": null,
+        "profissional_id": null,
         "assinatura_status": null,
         "trial_ate": null,
         "mp_subscription_id": null,
         "mp_pix_payment_id": null
     },
     {
-        "email": "victorjg10@admin.com",
-        "senha": "scrypt:32768:8:1$ll1PlhUDJpB26Lp5$4ab562d74ac2083cf89a96c495565698eb97e9bda7de8590402bf4bd2d3fb3591d7eb128e8e8052d1471b77bcf2c75c2d80c6ede12ffa510ab0cfe7307841123",
-        "tipo": "admin"
-    },
-    {
         "email": "duda@hotmail.com",
         "senha": "scrypt:32768:8:1$gv4kLAHrzc0Dr9vr$d839cbb7d9b523382c7b30150e5b11c9fc5f90c71aecb247163f98c3dca71bfb0cded4a7b66d2ffc7d64e9c2a833b1127387341804882acc5af6b949b1e9e5eb",
         "tipo": "cliente",
         "negocio_id": null,
+        "profissional_id": null,
         "assinatura_status": null,
         "trial_ate": null,
         "mp_subscription_id": null,
@@ -29,6 +38,7 @@
         "senha": "scrypt:32768:8:1$j2J86lru6UnNAuE3$155e2c42c8664e0d2e687b86db3402ce10948a446d836ca53b1a9ca159ed3100d960152df49579d93cf9ebb3bf5c352c32901f7f46f52656392ce342040f0b2e",
         "tipo": "cliente",
         "negocio_id": null,
+        "profissional_id": null,
         "assinatura_status": null,
         "trial_ate": null,
         "mp_subscription_id": null,
@@ -39,6 +49,7 @@
         "senha": "scrypt:32768:8:1$88jz77M6jCQp4ZaJ$f33e9722a963824d08765903012a2c8e3e23e44941e71743525fe93bc90080cc70af98eab162cd48b08430a68891670bc2a906ed1213488b0f085c55e1cb2a7c",
         "tipo": "cliente",
         "negocio_id": null,
+        "profissional_id": null,
         "assinatura_status": null,
         "trial_ate": null,
         "mp_subscription_id": null,
@@ -49,6 +60,7 @@
         "senha": "scrypt:32768:8:1$WocKtqqauQx5ic66$5420204d7a9c45dca31783fd0973e92d993b7331876b23a0ecb2713cfdab8972e05c5992630f182d9ab51965d91da27961690639e05dae1e6f438edb4f0ef0f5",
         "tipo": "dono",
         "negocio_id": 1,
+        "profissional_id": null,
         "assinatura_status": "trial",
         "trial_ate": "2026-03-07",
         "mp_subscription_id": null,
@@ -59,6 +71,7 @@
         "senha": "scrypt:32768:8:1$ubNwxeH3b8rZYvPw$df308e250f13c36b7dfa1dc5702f298d967c8b61b776df9a340c8aaea176ad711cd6f97afcc3d5daf83e15146a15e2e8f575b0aeff549254569281538f5b150f",
         "tipo": "dono",
         "negocio_id": 2,
+        "profissional_id": null,
         "assinatura_status": "trial",
         "trial_ate": "2026-03-11",
         "mp_subscription_id": null,
@@ -74,5 +87,17 @@
         "trial_ate": null,
         "mp_subscription_id": null,
         "mp_pix_payment_id": null
+    },
+    {
+        "email": "admin@orbyta.app",
+        "telefone": "",
+        "tipo": "admin",
+        "negocio_id": null,
+        "profissional_id": null,
+        "assinatura_status": null,
+        "trial_ate": null,
+        "mp_subscription_id": null,
+        "mp_pix_payment_id": null,
+        "senha": "scrypt:32768:8:1$RVGN7AIT0NLf7SIw$4b3b792f3afa554b60679b0e5546a98591238537963cde5450861b9758e28284af64ad46284888715657df39d737e70fffda8346d4f72374855396640824ba4c"
     }
 ]
