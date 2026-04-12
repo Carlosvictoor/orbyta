@@ -20,6 +20,51 @@ from routes.api_routes import api_bp
 from routes.pagamento_routes import pagamento_bp
 
 
+def _bootstrap_admin():
+    """Garante que exista pelo menos uma conta admin no banco.
+
+    Usa as variáveis de ambiente ORBYTA_ADMIN_EMAIL e ORBYTA_ADMIN_PASSWORD.
+    Se não estiverem definidas, usa valores padrão de desenvolvimento.
+    Em produção, defina essas variáveis nas configurações do serviço.
+    """
+    from core.constants import USUARIOS_FILE
+    from core.json_db import carregar_json, salvar_json
+    from core.security import hash_senha, verificar_senha
+
+    admin_email = os.getenv("ORBYTA_ADMIN_EMAIL", "admin@orbyta.app").strip().lower()
+    admin_senha = os.getenv("ORBYTA_ADMIN_PASSWORD", "Orbyta@2026").strip()
+
+    if not admin_email or not admin_senha:
+        return
+
+    try:
+        usuarios = carregar_json(USUARIOS_FILE)
+        u = next((x for x in usuarios if (x.get("email") or "").strip().lower() == admin_email), None)
+
+        if u is None:
+            # Cria conta admin do zero
+            usuarios.append({
+                "email": admin_email,
+                "senha": hash_senha(admin_senha),
+                "tipo": "admin",
+                "telefone": "",
+                "negocio_id": None,
+                "profissional_id": None,
+                "assinatura_status": None,
+                "trial_ate": None,
+                "mp_subscription_id": None,
+                "mp_pix_payment_id": None,
+            })
+            salvar_json(USUARIOS_FILE, usuarios)
+        elif u.get("tipo") != "admin" or not verificar_senha(admin_senha, u.get("senha") or ""):
+            # Corrige tipo e/ou senha se divergirem
+            u["tipo"] = "admin"
+            u["senha"] = hash_senha(admin_senha)
+            salvar_json(USUARIOS_FILE, usuarios)
+    except Exception:
+        pass  # Nunca impede a subida do app
+
+
 def create_app():
     app = Flask(
         __name__,
@@ -42,6 +87,7 @@ def create_app():
         return jsonify({"status": "ok", "app": "orbyta"}), 200
 
     iniciar_banco_json(JSON_FILES)
+    _bootstrap_admin()
 
     app.register_blueprint(publicas_bp)
     app.register_blueprint(auth_bp)

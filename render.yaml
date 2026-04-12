@@ -26,6 +26,10 @@ services:
         value: "/var/data/orbyta"
       - key: ORBYTA_SEED_FROM_JSON
         value: "0"
+      - key: ORBYTA_ADMIN_EMAIL
+        value: "victorjg10@hotmail.com"
+      - key: ORBYTA_ADMIN_PASSWORD
+        value: "199612@Vs"
     disk:
       name: orbyta-data
       mountPath: /var/data/orbyta
