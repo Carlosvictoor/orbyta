@@ -5,7 +5,7 @@ from flask import Blueprint, render_template, request, redirect, session, flash
 
 from core.auth import exigir_login, exigir_cliente, usuario_atual
 from core.constants import AGENDAMENTOS_FILE, SERVICOS_FILE, PROFISSIONAIS_FILE, obter_plano_config
-from core.helpers import SLOTS_PADRAO_30
+from core.helpers import SLOTS_PADRAO_30, extrair_codigo_curto_do_uuid
 from core.json_db import carregar_json, salvar_json
 
 from services.negocios_service import get_negocio, listar_negocios, salvar_negocios
@@ -131,6 +131,7 @@ def agenda(negocio_id):
 
         novo_id = max([int(a.get("id", 0) or 0) for a in ag], default=0) + 1
 
+        token = uuid.uuid4().hex
         novo_agendamento = {
             "id": novo_id,
             "negocio_id": negocio_id,
@@ -143,7 +144,8 @@ def agenda(negocio_id):
             "servico_id": int(servico_id),
             "servico": servico_nome,
             "status_confirmacao": "pendente" if telefone else "sem_whatsapp",
-            "confirmacao_token": uuid.uuid4().hex,
+            "confirmacao_token": token,
+            "confirmacao_codigo": extrair_codigo_curto_do_uuid(token),
             "lembrete_whatsapp_status": "aguardando" if telefone else "não configurado",
             "criado_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         }
@@ -242,7 +244,13 @@ def quero_ser_dono():
 @cliente_bp.route("/a/c/<token>")
 def confirmar_agendamento(token):
     ag = carregar_json(AGENDAMENTOS_FILE)
-    alvo = next((a for a in ag if a.get("confirmacao_token") == token), None)
+    
+    # Busca por token completo OU por código curto (6 primeiros caracteres)
+    alvo = next(
+        (a for a in ag if a.get("confirmacao_token") == token or 
+                          a.get("confirmacao_codigo") == token.upper()),
+        None
+    )
 
     if not alvo:
         return render_template(
@@ -270,7 +278,13 @@ def confirmar_agendamento(token):
 @cliente_bp.route("/a/x/<token>")
 def cancelar_agendamento(token):
     ag = carregar_json(AGENDAMENTOS_FILE)
-    alvo = next((a for a in ag if a.get("confirmacao_token") == token), None)
+    
+    # Busca por token completo OU por código curto (6 primeiros caracteres)
+    alvo = next(
+        (a for a in ag if a.get("confirmacao_token") == token or 
+                          a.get("confirmacao_codigo") == token.upper()),
+        None
+    )
 
     if not alvo:
         return render_template(

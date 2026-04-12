@@ -6,7 +6,7 @@ from core.auth import exigir_funcionario, usuario_atual
 from core.constants import AGENDAMENTOS_FILE, FINANCEIRO_FILE
 from core.json_db import carregar_json, salvar_json
 
-from core.helpers import clamp_pct, salvar_imagem_upload
+from core.helpers import clamp_pct, salvar_imagem_upload, extrair_codigo_curto_do_uuid
 from services.negocios_service import get_negocio
 from services.profissionais_service import get_profissional, listar_profissionais, salvar_profissionais, profissional_atende_servico
 from services.servicos_service import servico_preco, servico_nome_by_id, servicos_do_negocio
@@ -226,7 +226,8 @@ def painel_funcionario_agendar_manual():
     ag = carregar_json(AGENDAMENTOS_FILE)
     novo_id = max([int(a.get("id", 0) or 0) for a in ag], default=0) + 1
     servico_nome = servico_nome_by_id(negocio_id, int(servico_id)) or "Serviço"
-
+    confirmacao_token = uuid.uuid4().hex
+    
     ag.append({
         "id": novo_id,
         "negocio_id": negocio_id,
@@ -240,7 +241,8 @@ def painel_funcionario_agendar_manual():
         "servico_id": int(servico_id),
         "servico": servico_nome,
         "status_confirmacao": "pendente" if telefone else "sem_whatsapp",
-        "confirmacao_token": uuid.uuid4().hex,
+        "confirmacao_token": confirmacao_token,
+        "confirmacao_codigo": extrair_codigo_curto_do_uuid(confirmacao_token),
         "lembrete_whatsapp_status": "aguardando" if telefone else "não configurado",
         "origem": "manual_funcionario",
         "criado_por": u.get("email") or u.get("usuario") or "funcionario",

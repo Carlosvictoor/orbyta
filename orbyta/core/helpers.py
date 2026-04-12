@@ -1,10 +1,40 @@
 import os
 import uuid
+import secrets
+import string
 from datetime import datetime
 
 from werkzeug.utils import secure_filename
 
 ALLOWED_IMAGE_EXTENSIONS = {"png", "jpg", "jpeg", "webp", "gif"}
+
+
+def gerar_codigo_curto(comprimento: int = 6) -> str:
+    """Gera um código alfanumérico curto (ex: A3X9K2).
+    
+    Args:
+        comprimento: Número de caracteres (padrão 6)
+    
+    Returns:
+        String com caracteres maiúsculos + dígitos de forma aleatória
+    """
+    chars = string.ascii_uppercase + string.digits
+    return "".join(secrets.choice(chars) for _ in range(comprimento))
+
+
+def extrair_codigo_curto_do_uuid(token_uuid: str, comprimento: int = 6) -> str:
+    """Extrai um código curto desde um UUID (primeiros N caracteres em maiúscula).
+    
+    Args:
+        token_uuid: String do UUID (ex: 'a1b2c3d4-...')
+        comprimento: Número de caracteres a extrair (padrão 6)
+    
+    Returns:
+        Código curto em maiúscula (ex: 'A1B2C3')
+    """
+    # Remove dashes e pega os primeiros caracteres
+    clean = token_uuid.replace("-", "")
+    return clean[:comprimento].upper()
 
 
 def parse_money_br(v):

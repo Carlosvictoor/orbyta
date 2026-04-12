@@ -6,7 +6,7 @@ from flask import Blueprint, render_template, request, redirect, session, flash,
 
 from core.auth import exigir_dono, usuario_atual, exigir_assinatura_dono
 from core.constants import AGENDAMENTOS_FILE, APP_BASE_URL, MP_ACCESS_TOKEN, MP_PUBLIC_KEY, RANKING_RESET_FILE, USUARIOS_FILE
-from core.helpers import parse_money_br, SLOTS_PADRAO_30, clamp_pct, salvar_imagem_upload
+from core.helpers import parse_money_br, SLOTS_PADRAO_30, clamp_pct, salvar_imagem_upload, extrair_codigo_curto_do_uuid
 from core.json_db import carregar_json, salvar_json
 from core.security import hash_senha, senha_forte
 
@@ -350,6 +350,7 @@ def painel_agendar_manual():
     ag = carregar_json(AGENDAMENTOS_FILE)
     novo_id = max([int(a.get("id", 0) or 0) for a in ag], default=0) + 1
     servico_nome = servico_nome_by_id(negocio_id, int(servico_id)) or "Serviço"
+    confirmacao_token = uuid.uuid4().hex
 
     ag.append({
         "id": novo_id,
@@ -364,7 +365,8 @@ def painel_agendar_manual():
         "servico_id": int(servico_id),
         "servico": servico_nome,
         "status_confirmacao": "pendente" if telefone else "sem_whatsapp",
-        "confirmacao_token": uuid.uuid4().hex,
+        "confirmacao_token": confirmacao_token,
+        "confirmacao_codigo": extrair_codigo_curto_do_uuid(confirmacao_token),
         "lembrete_whatsapp_status": "aguardando" if telefone else "não configurado",
         "origem": "manual_dono",
         "criado_por": u.get("email") or "dono",

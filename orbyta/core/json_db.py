@@ -245,6 +245,16 @@ def _load_json_file(nome):
     if not os.path.exists(nome):
         return []
 
+
+def _write_json_snapshot(nome, dados):
+    """Mantem um snapshot JSON atualizado como fallback de recuperacao."""
+    pasta = os.path.dirname(nome)
+    if pasta and not os.path.exists(pasta):
+        os.makedirs(pasta, exist_ok=True)
+
+    with open(nome, "w", encoding="utf-8") as f:
+        json.dump(dados or [], f, indent=4, ensure_ascii=False)
+
     try:
         with open(nome, "r", encoding="utf-8") as f:
             txt = f.read().strip()
@@ -452,3 +462,6 @@ def salvar_json(nome, dados):
 
     conn.commit()
     conn.close()
+
+    # Espelha no JSON para facilitar recuperacao se o banco SQLite for recriado.
+    _write_json_snapshot(nome, dados)

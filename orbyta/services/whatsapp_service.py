@@ -69,9 +69,14 @@ def gerar_link_whatsapp(telefone: str, mensagem: str = "") -> str:
 def renderizar_template_lembrete(template: str, agendamento: dict, negocio: dict) -> str:
     base_url = os.getenv("APP_BASE_URL", "http://127.0.0.1:5000").rstrip("/")
     token = agendamento.get("confirmacao_token") or ""
+    codigo_curto = agendamento.get("confirmacao_codigo") or ""
     mensagem_base = (template or "").strip() or DEFAULT_REMINDER_TEMPLATE
     whatsapp_dono = numero_whatsapp_negocio(negocio)
     ja_confirmado = (agendamento.get("status_confirmacao") or "").strip().lower() == "confirmado"
+
+    # Usa código curto se disponível, senão usa token completo
+    param_confirmar = codigo_curto or token
+    param_cancelar = codigo_curto or token
 
     if not ja_confirmado and "{link_confirmar}" not in mensagem_base and "{link_cancelar}" not in mensagem_base:
         mensagem_base += "\n\n✅ Confirmar: {link_confirmar}\n❌ Cancelar: {link_cancelar}"
@@ -85,8 +90,8 @@ def renderizar_template_lembrete(template: str, agendamento: dict, negocio: dict
         "profissional": agendamento.get("barbeiro") or "profissional",
         "telefone": agendamento.get("telefone") or "",
         "whatsapp_dono": whatsapp_dono,
-        "link_confirmar": f"{base_url}/a/c/{token}" if token else base_url,
-        "link_cancelar": f"{base_url}/a/x/{token}" if token else base_url,
+        "link_confirmar": f"{base_url}/a/c/{param_confirmar}" if param_confirmar else base_url,
+        "link_cancelar": f"{base_url}/a/x/{param_cancelar}" if param_cancelar else base_url,
     })
 
     return mensagem_base.format_map(valores)
