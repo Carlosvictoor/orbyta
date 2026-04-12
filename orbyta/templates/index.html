@@ -50,7 +50,7 @@
   </nav>
 
   <div class="actions">
-    <button id="install-pwa-top-btn" type="button" class="btn pwa-install-btn pwa-install-trigger">
+    <button id="install-pwa-top-btn" type="button" class="btn pwa-install-btn pwa-install-trigger" hidden>
       ⬇ Baixar app
     </button>
     {% if session.get("usuario") %}
@@ -104,7 +104,7 @@
     {% else %}
       <a href="/cliente" class="btn outline">Ver meus agendamentos</a>
     {% endif %}
-    <button id="install-pwa-btn" type="button" class="btn pwa-install-btn pwa-install-trigger">
+    <button id="install-pwa-btn" type="button" class="btn pwa-install-btn pwa-install-trigger" hidden>
       ⬇ Baixar app
     </button>
   </div>
@@ -263,12 +263,14 @@
   if (pwaJaFoiInstalado()) {
     marcarPwaComoInstalado();
     esconderBotoesInstalacao();
-  } else if (isIos) {
+  } else if (isIos && !isStandalone) {
+    // iOS não tem beforeinstallprompt: mostra instrução manual
     abrirBotaoInstalacao("⬇ Instalar no iPhone");
     mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
-  } else {
-    abrirBotaoInstalacao("⬇ Baixar app");
   }
+  // Android/Desktop: botão SEM mostrar por padrão.
+  // Só aparecerá quando beforeinstallprompt disparar
+  // (esse evento só ocorre quando o app AINDA NÃO está instalado)
 
   window.addEventListener("beforeinstallprompt", (event) => {
     event.preventDefault();
