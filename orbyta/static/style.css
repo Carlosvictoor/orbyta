@@ -418,6 +418,7 @@ button:hover{ background:#00e676; }
   color: #fff;
   box-shadow: 0 10px 24px rgba(0,0,0,.22);
   transition: transform .18s ease, box-shadow .18s ease, border-color .18s ease;
+  white-space: nowrap;
 }
 .pwa-install-btn:hover{
   transform: translateY(-1px);
@@ -434,6 +435,12 @@ button:hover{ background:#00e676; }
   color: rgba(255,255,255,.95);
   font-size: 14px;
   line-height: 1.45;
+}
+
+.home-navbar .actions .pwa-install-btn{
+  padding: 9px 14px;
+  min-height: 40px;
+  font-size: 13px;
 }
 
 .home-section{

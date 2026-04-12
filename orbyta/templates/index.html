@@ -50,6 +50,9 @@
   </nav>
 
   <div class="actions">
+    <button id="install-pwa-top-btn" type="button" class="btn pwa-install-btn pwa-install-trigger">
+      ⬇ Baixar app
+    </button>
     {% if session.get("usuario") %}
       {% if session.get("tipo") == "cliente" %}
         <a href="/cliente" class="btn primary">Minha conta</a>
@@ -101,8 +104,8 @@
     {% else %}
       <a href="/cliente" class="btn outline">Ver meus agendamentos</a>
     {% endif %}
-    <button id="install-pwa-btn" type="button" class="btn pwa-install-btn" hidden>
-      ⬇ Instalar app
+    <button id="install-pwa-btn" type="button" class="btn pwa-install-btn pwa-install-trigger">
+      ⬇ Baixar app
     </button>
   </div>
 
@@ -195,7 +198,7 @@
 <script>
   const dropdown = document.querySelector(".dropdown");
   const button = document.querySelector(".dropbtn");
-  const installPwaBtn = document.getElementById("install-pwa-btn");
+  const installPwaBtns = Array.from(document.querySelectorAll(".pwa-install-trigger"));
   const pwaInstallHint = document.getElementById("pwa-install-hint");
   const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
   const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
@@ -214,9 +217,16 @@
   }
 
   function abrirBotaoInstalacao(texto) {
-    if (!installPwaBtn) return;
-    installPwaBtn.textContent = texto;
-    installPwaBtn.hidden = false;
+    installPwaBtns.forEach((btn) => {
+      btn.textContent = texto;
+      btn.hidden = false;
+    });
+  }
+
+  function esconderBotoesInstalacao() {
+    installPwaBtns.forEach((btn) => {
+      btn.hidden = true;
+    });
   }
 
   if (dropdown && button) {
@@ -233,10 +243,12 @@
   }
 
   if (isStandalone) {
-    if (installPwaBtn) installPwaBtn.hidden = true;
+    esconderBotoesInstalacao();
   } else if (isIos) {
     abrirBotaoInstalacao("⬇ Instalar no iPhone");
     mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
+  } else {
+    abrirBotaoInstalacao("⬇ Baixar app");
   }
 
   window.addEventListener("beforeinstallprompt", (event) => {
@@ -246,7 +258,7 @@
     esconderHintInstalacao();
   });
 
-  if (installPwaBtn) {
+  installPwaBtns.forEach((installPwaBtn) => {
     installPwaBtn.addEventListener("click", async () => {
       if (isIos && !deferredInstallPrompt) {
         mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
@@ -263,16 +275,16 @@
       deferredInstallPrompt = null;
 
       if (escolha.outcome === "accepted") {
-        installPwaBtn.hidden = true;
+        esconderBotoesInstalacao();
         mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
       } else {
         mostrarHintInstalacao("Sem problemas. Você pode instalar depois por este mesmo botão.");
       }
     });
-  }
+  });
 
   window.addEventListener("appinstalled", () => {
-    if (installPwaBtn) installPwaBtn.hidden = true;
+    esconderBotoesInstalacao();
     mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
   });
 </script>
