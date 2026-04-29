@@ -40,6 +40,11 @@ def index():
     return render_template("index.html")
 
 
+@publicas_bp.route("/download-app")
+def download_app():
+    return render_template("download_app.html")
+
+
 @publicas_bp.route("/planos")
 def planos():
     return render_template("planos.html")
@@ -52,25 +57,21 @@ def negocios_inicio():
         {
             "tipo": "saloes",
             "titulo": "Salões de Beleza",
-            "icone": "💇‍♀️",
             "descricao": "Cabelos, unhas, maquiagem e cuidados para o dia a dia ou ocasiões especiais.",
         },
         {
             "tipo": "barbearias",
             "titulo": "Barbearias",
-            "icone": "💈",
             "descricao": "Corte, barba, acabamento e atendimento rápido com estilo.",
         },
         {
             "tipo": "studios",
             "titulo": "Studios",
-            "icone": "✨",
             "descricao": "Studios de design, nail, sobrancelha e atendimentos especializados.",
         },
         {
             "tipo": "clinicas",
             "titulo": "Clínicas de Estética",
-            "icone": "🧴",
             "descricao": "Tratamentos, estética facial e corporal com mais organização no agendamento.",
         },
     ]

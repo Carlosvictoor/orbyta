@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Admin</title>
+  <title>Admin • Orbyta</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="manifest" href="/manifest.json">
@@ -108,7 +108,7 @@
         <div class="row-actions">
           <a class="btn outline" href="/loja/{{ n.id }}">Ver loja</a>
 
-          <!-- ✅ EXCLUIR NEGÓCIO -->
+          <!-- Excluir negócio -->
           <a class="btn-danger"
              href="/admin/excluir_negocio/{{ n.id }}"
              onclick="return confirm('Tem certeza que deseja EXCLUIR esse negócio?\\n\\nIsso vai apagar também: profissionais, serviços, horários e agendamentos desse negócio.');">
@@ -180,7 +180,7 @@
         </form>
 
         <div class="row-actions">
-          <!-- ✅ EXCLUIR DONO -->
+          <!-- Excluir dono -->
           <a class="btn-warn"
              href="/admin/excluir_dono/{{ d.email|urlencode }}"
              onclick="return confirm('Tem certeza que deseja EXCLUIR o dono: {{ d.email }} ?');">

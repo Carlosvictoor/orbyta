@@ -63,7 +63,7 @@ def cadastro():
         session["negocio_id"] = None
         session["profissional_id"] = None
 
-        flash("Conta criada e salva automaticamente ✅")
+        flash("Conta criada e salva automaticamente.")
         return redirect("/negocios")
 
     return render_template("cadastro.html")

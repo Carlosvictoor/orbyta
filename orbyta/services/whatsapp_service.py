@@ -79,7 +79,7 @@ def renderizar_template_lembrete(template: str, agendamento: dict, negocio: dict
     param_cancelar = codigo_curto or token
 
     if not ja_confirmado and "{link_confirmar}" not in mensagem_base and "{link_cancelar}" not in mensagem_base:
-        mensagem_base += "\n\n✅ Confirmar: {link_confirmar}\n❌ Cancelar: {link_cancelar}"
+        mensagem_base += "\n\nConfirmar: {link_confirmar}\nCancelar: {link_cancelar}"
 
     valores = _SafeDict({
         "nome": agendamento.get("nome") or "Cliente",

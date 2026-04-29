@@ -7,7 +7,7 @@
    - Resto: stale-while-revalidate
    ============================================================= */
 
-const CACHE_VERSION = 'v2';
+const CACHE_VERSION = 'v3';
 const CACHE_NAME = `orbyta-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [

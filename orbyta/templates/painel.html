@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Gestão de controle • {{ negocio.nome }}</title>
+  <title>Gestão de controle • {{ negocio.nome }}</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="manifest" href="/manifest.json">
@@ -45,7 +45,7 @@
 
   <div class="panel" style="margin-top:12px;">
     <div class="panel-head">
-      <h2>✨ Personalizar página da loja</h2>
+      <h2>Personalizar página da loja</h2>
       <a class="link-btn" href="/loja/{{ negocio.id }}" target="_blank" rel="noopener noreferrer">Ver página pública</a>
     </div>
 
@@ -121,7 +121,7 @@
 
   <div class="panel" style="margin-top:12px;">
     <div class="panel-head">
-      <h2>⏰ Lembretes manuais no WhatsApp</h2>
+      <h2>Lembretes manuais no WhatsApp</h2>
       <span class="small-muted">Botão pronto para abrir o WhatsApp Web com a mensagem de 45 min</span>
     </div>
 
@@ -147,7 +147,7 @@
   <div class="two-col">
     <div class="panel">
       <div class="panel-head">
-        <h2>🏆 Ranking do mês</h2>
+        <h2>Ranking do mês</h2>
         <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
           {% if ranking_reset_em %}
             <span class="small-muted">Zerado em {{ ranking_reset_em }}</span>
@@ -176,7 +176,7 @@
 
     <div class="panel">
       <div class="panel-head">
-        <h2>📅 Próximos atendimentos</h2>
+        <h2>Próximos atendimentos</h2>
         <span class="small-muted">Agenda de hoje</span>
       </div>
 
@@ -186,7 +186,7 @@
             <li>
               <strong>{{ p.horario }}</strong> • {{ p.nome }}
               {% if p.whatsapp_link %}
-                <a href="{{ p.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
+                <a href="{{ p.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar no WhatsApp" style="text-decoration:none; margin-left:6px;">WhatsApp</a>
               {% endif %}
               <br>
               <span class="small-muted">{{ p.servico }} • {{ p.barbeiro }}</span>
@@ -306,7 +306,7 @@
 
       <input class="input" name="whatsapp_numero_envio" placeholder="WhatsApp do estabelecimento (com DDD)" value="{{ negocio.get('whatsapp_numero_envio', negocio.get('whatsapp', '')) }}">
 
-      <textarea name="whatsapp_mensagem_template" class="input" rows="6" style="min-height:140px; resize:vertical;">{{ negocio.get('whatsapp_mensagem_template', 'Olá {nome}! Aqui é da {negocio}. Seu atendimento está marcado para {data} às {horario} com {profissional} ({servico}). Fale conosco em {whatsapp_dono}.\n\n✅ Confirmar: {link_confirmar}\n❌ Cancelar: {link_cancelar}') }}</textarea>
+      <textarea name="whatsapp_mensagem_template" class="input" rows="6" style="min-height:140px; resize:vertical;">{{ negocio.get('whatsapp_mensagem_template', 'Olá {nome}! Aqui é da {negocio}. Seu atendimento está marcado para {data} às {horario} com {profissional} ({servico}). Fale conosco em {whatsapp_dono}.\n\nConfirmar: {link_confirmar}\nCancelar: {link_cancelar}') }}</textarea>
 
       <p class="small-muted">
         Você pode usar: <code>{nome}</code>, <code>{negocio}</code>, <code>{data}</code>, <code>{horario}</code>,
@@ -369,7 +369,7 @@
             <td>
               <strong>{{ a.nome }}</strong>
               {% if a.whatsapp_link %}
-                <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
+                <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">WhatsApp</a>
               {% endif %}
             </td>
             <td>{{ a.telefone or '—' }}</td>

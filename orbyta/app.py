@@ -83,6 +83,10 @@ def create_app():
     app.config["SESSION_COOKIE_SECURE"] = env_bool("SESSION_COOKIE_SECURE", False)
     app.config["PREFERRED_URL_SCHEME"] = os.getenv("PREFERRED_URL_SCHEME", "https" if app.config["SESSION_COOKIE_SECURE"] else "http")
     app.config["SESSION_COOKIE_NAME"] = os.getenv("SESSION_COOKIE_NAME", "orbyta_session")
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+    if not env_bool("FLASK_DEBUG", False):
+        app.jinja_env.auto_reload = True
 
     if env_bool("TRUST_PROXY", True):
         app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_port=1)

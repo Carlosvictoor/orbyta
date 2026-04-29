@@ -277,7 +277,7 @@ a:focus, button:focus, input:focus, select:focus{
   margin: auto;
 }
 
-/* 🔥 ISSO resolve seu problema */
+/* Centraliza os títulos dentro dos cards principais */
 .card h1,
 .card h2{
   text-align: center;
@@ -305,28 +305,52 @@ button{
 button:hover{ background:#00e676; }
 
 /* =========================
-   SENHA (OLHINHO)
+   SENHA (LOGIN)
 ========================= */
 .password-wrap{
-  position: relative;
+  width: 100%;
 }
 
-.password-wrap .password-input{
-  padding-right: 52px;
+.auth-actions{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin-top:10px;
 }
 
-.password-wrap .password-toggle{
-  position: absolute;
-  right: 8px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 40px;
-  height: 34px;
-  border-radius: 10px;
-  border: none;
-  background: #333;
-  color: #fff;
-  cursor: pointer;
+.auth-actions button[type="submit"]{
+  margin-top:0;
+}
+
+.password-checkbox{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  color:rgba(255,255,255,.9);
+  font-size:0.95rem;
+  font-weight:700;
+  cursor:pointer;
+  user-select:none;
+}
+
+.password-checkbox input{
+  width:18px;
+  height:18px;
+  margin:0;
+  accent-color:#25e082;
+  cursor:pointer;
+}
+
+@media (max-width: 560px){
+  .auth-actions{
+    flex-direction:column;
+    align-items:stretch;
+  }
+
+  .password-checkbox{
+    align-self:flex-start;
+  }
 }
 
 /* =========================
@@ -451,6 +475,53 @@ button:hover{ background:#00e676; }
 .home-section p{
   max-width: 720px;
   opacity: .85;
+}
+
+.download-app-page{
+  text-align:left;
+}
+
+.download-hero{
+  align-items:stretch;
+}
+
+.download-hero > div:first-child{
+  flex:1 1 520px;
+}
+
+.download-hero-card{
+  width:min(420px, 100%);
+  padding:24px;
+}
+
+.download-badge-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:8px;
+  margin-bottom:12px;
+}
+
+.download-actions,
+.download-info-grid,
+.download-steps-grid{
+  margin-top:18px;
+}
+
+.download-step-card .page-kicker{
+  margin-bottom:10px;
+}
+
+.download-cta-panel{
+  margin-top:28px;
+  padding:28px;
+  border-radius:20px;
+  background:rgba(255,255,255,.04);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:var(--shadow);
+}
+
+.download-cta-panel p{
+  margin-left:0;
 }
 
 /* =========================
@@ -1030,7 +1101,7 @@ font-size:16px;
   color: rgba(255,140,140,1);
 }
 
-/* ✅ novo: badge cinza pra "Manual" */
+/* Badge cinza para status manual */
 .badge.gray{
   background: rgba(255,255,255,.08);
   border:1px solid rgba(255,255,255,.12);
@@ -1124,6 +1195,10 @@ font-size:16px;
   --brand-2:#58f0a6;
   --accent:#ff8a3d;
   --shadow:0 18px 45px rgba(0,0,0,.28);
+  --button-height:48px;
+  --button-padding-x:18px;
+  --button-radius:14px;
+  --button-font-size:15px;
 }
 
 body{
@@ -1185,6 +1260,22 @@ button,
   transition: transform .16s ease, box-shadow .16s ease, filter .16s ease;
 }
 
+button:not(.dropbtn):not(.password-toggle-text),
+.btn,
+.btn-outline,
+.link-btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-height:var(--button-height);
+  padding:0 var(--button-padding-x);
+  border-radius:var(--button-radius);
+  font-size:var(--button-font-size);
+  font-weight:800;
+  line-height:1;
+  white-space:nowrap;
+}
+
 button:hover,
 .btn:hover,
 .btn-outline:hover{
@@ -1200,12 +1291,7 @@ button{
 
 .btn.outline,
 .btn-outline{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
   gap:8px;
-  padding:10px 16px;
-  border-radius:999px;
   border:1px solid rgba(37,224,130,.48);
   color:#b6ffd8;
   background:rgba(37,224,130,.08);
@@ -1560,6 +1646,7 @@ button{
   .page-hero{ align-items:flex-start; }
   .agenda-top{ flex-direction:column; align-items:flex-start; }
   .accordion-service-top{ flex-direction:column; }
+  .download-hero-card{ width:100%; }
 }
 
 @media (max-width: 768px){

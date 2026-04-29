@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Login • Orbyta</title>
+  <title>Login • Orbyta</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="manifest" href="/manifest.json">
@@ -20,7 +20,7 @@
 <div class="auth-center">
   <div class="card auth-shell">
     <span class="auth-kicker">Acesso rápido e seguro</span>
-    <h2>Entrar na Orbyta 🪐</h2>
+    <h2>Entrar na Orbyta</h2>
     <p class="auth-subtitle">
       Acesse sua conta para acompanhar agendamentos, reservar novos horários e gerenciar tudo com facilidade.
     </p>
@@ -34,10 +34,10 @@
     {% endwith %}
 
     <div class="auth-list">
-      <span class="auth-pill">⚡ Login rápido</span>
-      <span class="auth-pill">📅 Seus horários em um lugar</span>
-      <span class="auth-pill">🔒 Conta protegida</span>
-      <span class="auth-pill">💬 Reagende com facilidade</span>
+      <span class="auth-pill">Acesso rápido</span>
+      <span class="auth-pill">Seus horários em um só lugar</span>
+      <span class="auth-pill">Conta protegida</span>
+      <span class="auth-pill">Reagendamento simplificado</span>
     </div>
 
     <form method="post" action="/login">
@@ -59,17 +59,20 @@
           class="password-input"
           autocomplete="current-password"
         >
-
-        <button
-          type="button"
-          class="password-toggle"
-          onclick="toggleSenha()"
-          aria-label="Mostrar ou ocultar senha">
-          👁
-        </button>
       </div>
 
-      <button type="submit">Entrar na minha conta</button>
+      <div class="auth-actions">
+        <label class="password-checkbox" for="mostrarSenha">
+          <input
+            id="mostrarSenha"
+            type="checkbox"
+            onchange="toggleSenha()"
+            aria-controls="senha"
+          >
+          <span>Mostrar senha</span>
+        </label>
+        <button type="submit">Entrar na minha conta</button>
+      </div>
     </form>
 
     <div class="auth-footer" style="text-align:center; margin-top:14px;">
@@ -82,7 +85,8 @@
 <script>
 function toggleSenha() {
   const campo = document.getElementById("senha");
-  campo.type = campo.type === "password" ? "text" : "password";
+  const checkbox = document.getElementById("mostrarSenha");
+  campo.type = checkbox.checked ? "text" : "password";
 }
 </script>
 

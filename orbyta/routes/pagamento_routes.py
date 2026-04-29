@@ -129,7 +129,7 @@ def assinar():
             },
         )
         if plano_query in PLANOS_CONFIG and plano_query != plano_atual_usuario:
-            flash(f"Plano {plano_tmp['nome']} salvo automaticamente ✅")
+            flash(f"Plano {plano_tmp['nome']} salvo automaticamente.")
         u = usuario_atual() or u
 
     if u and MP_ACCESS_TOKEN and (u.get("mp_pix_payment_id") or u.get("mp_subscription_id")) and (u.get("assinatura_status") or "").lower() != "ativa":

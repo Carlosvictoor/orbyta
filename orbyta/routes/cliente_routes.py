@@ -158,9 +158,9 @@ def agenda(negocio_id):
 
         if telefone:
             atualizar_usuario(session["usuario"], {"telefone": telefone})
-            flash("Agendamento concluído! ✅ Se o WhatsApp automático estiver ativo, você receberá um lembrete 45 minutos antes.")
+            flash("Agendamento concluído. Se o WhatsApp automático estiver ativo, você receberá um lembrete 45 minutos antes.")
         else:
-            flash("Agendamento concluído com sucesso! ✅")
+            flash("Agendamento concluído com sucesso.")
         return redirect(f"/agenda/{negocio_id}")
 
     return render_template(
@@ -178,7 +178,7 @@ def agenda(negocio_id):
 @cliente_bp.route("/quero-ser-dono", methods=["GET", "POST"])
 def quero_ser_dono():
     if not exigir_login():
-        flash("Faça login para criar seu negócio ✅")
+        flash("Faça login para criar seu negócio.")
         return redirect("/login")
 
     u = usuario_atual()
@@ -234,7 +234,7 @@ def quero_ser_dono():
         session["tipo"] = "dono"
         session["negocio_id"] = novo_id
 
-        flash("Negócio criado! 🎁 Você ganhou 7 dias grátis. Agora escolha o pagamento ✅")
+        flash("Negócio criado com sucesso. Você recebeu 7 dias de teste e já pode escolher a forma de pagamento.")
         return redirect("/assinar")
 
     return render_template("quero_ser_dono.html")
@@ -268,9 +268,9 @@ def confirmar_agendamento(token):
     salvar_json(AGENDAMENTOS_FILE, ag)
 
     if ja_estava_confirmado:
-        flash("Seu agendamento já estava confirmado ✅")
+        flash("Seu agendamento já estava confirmado.")
     else:
-        flash("Agendamento confirmado com sucesso ✅")
+        flash("Agendamento confirmado com sucesso.")
     return redirect("/")
 
 

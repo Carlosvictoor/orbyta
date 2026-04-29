@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Download App • Orbyta</title>
+  <link rel="icon" type="image/png" href="/static/favicon.png">
+  <link rel="apple-touch-icon" href="/static/icon-192.png">
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#f97316">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Orbyta">
+  <script defer src="/static/pwa-register.js"></script>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<header class="navbar home-navbar">
+  <div class="logo">
+    <a href="/" class="brand-link" aria-label="Voltar para a página inicial da Orbyta">
+      <span class="brand-badge">O</span>
+      <span class="brand-text">
+        <strong>Orbyta</strong>
+        <small>Agendamentos online</small>
+      </span>
+    </a>
+  </div>
+
+  <nav class="menu main-menu-wrap" aria-label="Menu principal">
+    <ul>
+      <li class="dropdown main-menu-dropdown">
+        <button class="dropbtn" aria-haspopup="true" aria-expanded="false">Menu ▾</button>
+        <div class="dropdown-content" role="menu">
+          <a href="/negocios" role="menuitem">Negócios</a>
+          <a href="/planos" role="menuitem">Planos</a>
+          <a href="/download-app" role="menuitem">Download app</a>
+          <a href="/#sobre" role="menuitem">A Orbyta</a>
+          <a href="/cliente" role="menuitem">Meus Agendamentos</a>
+          <hr class="menu-divider">
+          <a href="/negocios/saloes" role="menuitem">Salões de Beleza</a>
+          <a href="/negocios/barbearias" role="menuitem">Barbearias</a>
+          <a href="/negocios/clinicas" role="menuitem">Clínicas de Estética</a>
+          <a href="/negocios/studios" role="menuitem">Studios</a>
+        </div>
+      </li>
+    </ul>
+  </nav>
+
+  <div class="actions">
+    {% if session.get("usuario") %}
+      {% if session.get("tipo") == "admin" %}
+        <a href="/admin" class="btn primary">Admin</a>
+      {% elif session.get("tipo") == "dono" %}
+        <a href="/painel" class="btn primary">Painel</a>
+      {% else %}
+        <a href="/cliente" class="btn primary">Minha conta</a>
+      {% endif %}
+      <a href="/logout" class="btn outline">Sair</a>
+    {% else %}
+      <a href="/login" class="btn primary">Entrar</a>
+      <a href="/cadastro" class="btn outline">Criar Conta</a>
+    {% endif %}
+  </div>
+</header>
+
+<div class="container page download-app-page">
+  <div class="page-hero download-hero">
+    <div>
+      <span class="page-kicker">Aplicativo Orbyta</span>
+      <h1>Baixe a Orbyta e tenha seus agendamentos sempre por perto</h1>
+      <p class="page-subtitle">
+        Instale a Orbyta como aplicativo no seu celular ou computador para abrir mais rápido, acessar sua conta com praticidade e usar a plataforma com uma apresentação mais profissional.
+      </p>
+    </div>
+
+    <div class="download-hero-card card">
+      <div class="download-badge-row">
+        <span class="auth-pill">Instalação oficial</span>
+        <span class="auth-pill">Rápida e leve</span>
+      </div>
+
+      <h2>Instale em poucos passos</h2>
+      <p class="muted">
+        O aplicativo é instalado direto pelo navegador compatível e fica disponível na tela inicial do seu dispositivo.
+      </p>
+
+      <div class="hero-actions download-actions">
+        <button id="install-pwa-btn" type="button" class="btn primary pwa-install-btn pwa-install-trigger" hidden>
+          Baixar app Orbyta
+        </button>
+        <a href="/login" class="btn outline">Entrar na minha conta</a>
+      </div>
+
+      <p id="pwa-install-hint" class="pwa-install-hint" hidden></p>
+    </div>
+  </div>
+
+  <div class="feature-grid download-info-grid">
+    <div class="feature-card">
+      <h3>Acesso mais rápido</h3>
+      <p class="muted">Abra a Orbyta em um toque direto da tela inicial, sem depender de buscar o site no navegador.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Mais foco no uso</h3>
+      <p class="muted">A experiência fica mais limpa e direta para acompanhar agendamentos, horários e ações do dia a dia.</p>
+    </div>
+    <div class="feature-card">
+      <h3>Sem complicação</h3>
+      <p class="muted">A instalação é leve, sem loja externa e sem etapas desnecessárias para começar a usar.</p>
+    </div>
+  </div>
+
+  <div class="feature-grid download-steps-grid">
+    <div class="feature-card download-step-card">
+      <span class="page-kicker">iPhone</span>
+      <h3>Instale pelo Safari</h3>
+      <p class="muted">Abra esta página no Safari, toque em Compartilhar e selecione Adicionar à Tela de Início.</p>
+    </div>
+    <div class="feature-card download-step-card">
+      <span class="page-kicker">Android</span>
+      <h3>Use o botão desta página</h3>
+      <p class="muted">Quando o navegador compatível liberar a instalação, o botão de download ficará disponível automaticamente.</p>
+    </div>
+    <div class="feature-card download-step-card">
+      <span class="page-kicker">Computador</span>
+      <h3>Instale no desktop</h3>
+      <p class="muted">Em navegadores compatíveis, você pode instalar a Orbyta como aplicativo para abrir em janela própria.</p>
+    </div>
+  </div>
+
+  <div class="download-cta-panel">
+    <span class="page-kicker">Use a Orbyta no seu ritmo</span>
+    <h2>Deixe o app sempre acessível no seu dispositivo</h2>
+    <p class="page-subtitle">
+      Depois de instalado, o acesso fica mais rápido para clientes e para quem gerencia o negócio, sem perder a experiência elegante da plataforma.
+    </p>
+    <div class="hero-actions">
+      <a href="/negocios" class="btn primary">Explorar negócios</a>
+      <a href="/cadastro" class="btn outline">Criar conta grátis</a>
+    </div>
+  </div>
+</div>
+
+<script>
+  const dropdown = document.querySelector(".dropdown");
+  const button = document.querySelector(".dropbtn");
+  const installPwaBtns = Array.from(document.querySelectorAll(".pwa-install-trigger"));
+  const pwaInstallHint = document.getElementById("pwa-install-hint");
+  const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
+  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+  const pwaInstalledKey = "orbyta_pwa_instalado";
+  let deferredInstallPrompt = null;
+
+  function marcarPwaComoInstalado() {
+    try {
+      window.localStorage.setItem(pwaInstalledKey, "1");
+    } catch (_) {
+      // Sem acesso ao localStorage, segue sem persistir.
+    }
+  }
+
+  function pwaJaFoiInstalado() {
+    if (isStandalone) return true;
+    try {
+      return window.localStorage.getItem(pwaInstalledKey) === "1";
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function mostrarHintInstalacao(texto) {
+    if (!pwaInstallHint) return;
+    pwaInstallHint.textContent = texto;
+    pwaInstallHint.hidden = false;
+  }
+
+  function esconderHintInstalacao() {
+    if (!pwaInstallHint) return;
+    pwaInstallHint.hidden = true;
+    pwaInstallHint.textContent = "";
+  }
+
+  function abrirBotaoInstalacao(texto) {
+    installPwaBtns.forEach((btn) => {
+      btn.textContent = texto;
+      btn.hidden = false;
+    });
+  }
+
+  function esconderBotoesInstalacao() {
+    installPwaBtns.forEach((btn) => {
+      btn.hidden = true;
+    });
+  }
+
+  if (dropdown && button) {
+    button.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const isActive = dropdown.classList.toggle("active");
+      button.setAttribute("aria-expanded", String(isActive));
+    });
+
+    document.addEventListener("click", () => {
+      dropdown.classList.remove("active");
+      button.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  if (pwaJaFoiInstalado()) {
+    esconderBotoesInstalacao();
+    mostrarHintInstalacao("Aplicativo já instalado neste dispositivo. Abra pela tela inicial para acesso mais rápido.");
+  } else if (isIos && !isStandalone) {
+    abrirBotaoInstalacao("Instalar no iPhone");
+    mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.");
+  }
+
+  window.addEventListener("beforeinstallprompt", (event) => {
+    event.preventDefault();
+    deferredInstallPrompt = event;
+    abrirBotaoInstalacao("Baixar app Orbyta");
+    esconderHintInstalacao();
+  });
+
+  installPwaBtns.forEach((installPwaBtn) => {
+    installPwaBtn.addEventListener("click", async () => {
+      if (isIos && !deferredInstallPrompt) {
+        mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.");
+        return;
+      }
+
+      if (!deferredInstallPrompt) {
+        mostrarHintInstalacao("Seu navegador ainda não liberou a instalação automática. Continue navegando e tente novamente em alguns instantes.");
+        return;
+      }
+
+      deferredInstallPrompt.prompt();
+      const escolha = await deferredInstallPrompt.userChoice;
+      deferredInstallPrompt = null;
+
+      if (escolha.outcome === "accepted") {
+        marcarPwaComoInstalado();
+        esconderBotoesInstalacao();
+        mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial do seu dispositivo.");
+      } else {
+        mostrarHintInstalacao("Instalação cancelada. Você pode tentar novamente por esta página quando quiser.");
+      }
+    });
+  });
+
+  window.addEventListener("appinstalled", () => {
+    marcarPwaComoInstalado();
+    esconderBotoesInstalacao();
+    mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial do seu dispositivo.");
+  });
+</script>
+
+</body>
+</html>

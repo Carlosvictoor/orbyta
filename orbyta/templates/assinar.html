@@ -2,7 +2,7 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <title>🪐 Assinar • Orbyta</title>
+  <title>Assinar • Orbyta</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
@@ -20,7 +20,7 @@
 <header class="navbar home-navbar">
   <div class="logo">
     <a href="/" class="brand-link" aria-label="Voltar para a página inicial da Orbyta">
-      <span class="brand-badge">🪐</span>
+      <span class="brand-badge">O</span>
       <span class="brand-text">
         <strong>Orbyta</strong>
         <small>Agendamentos online</small>
@@ -35,6 +35,7 @@
         <div class="dropdown-content" role="menu">
           <a href="/negocios" role="menuitem">Negócios</a>
           <a href="/planos" role="menuitem">Planos</a>
+          <a href="/download-app" role="menuitem">Download app</a>
           <a href="/#sobre" role="menuitem">A Orbyta</a>
           <a href="/cliente" role="menuitem">Meus Agendamentos</a>
           <hr class="menu-divider">
@@ -66,7 +67,7 @@
 
   {% if u.get("assinatura_status") == "trial" and u.get("trial_ate") %}
     <p style="opacity:.85; margin-top:8px;">
-      🎁 Seu teste grátis vai até <b>{{ u.trial_ate }}</b>
+      Seu período de teste vai até <b>{{ u.trial_ate }}</b>
     </p>
   {% endif %}
 
@@ -114,10 +115,10 @@
 
         <div class="biz-actions" style="margin-top:16px;">
           <a href="/assinar/cartao?plano={{ plano.slug }}" class="btn primary">
-            💳 Assinar {{ plano.nome }}
+            Assinar {{ plano.nome }}
           </a>
           <a href="/assinar/pix?plano={{ plano.slug }}" class="btn outline">
-            ⚡ Pix {{ plano.nome }}
+            Pagar com Pix
           </a>
           {% if plano.slug != plano_atual.slug %}
             <a href="/assinar?plano={{ plano.slug }}" class="link-btn">

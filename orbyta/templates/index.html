@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Orbyta • Agendamentos online</title>
+  <title>Orbyta • Agendamentos online</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="manifest" href="/manifest.json">
@@ -22,7 +22,7 @@
 
   <div class="logo">
     <a href="/" class="brand-link" aria-label="Voltar para a página inicial da Orbyta">
-      <span class="brand-badge">🪐</span>
+      <span class="brand-badge">O</span>
       <span class="brand-text">
         <strong>Orbyta</strong>
         <small>Agendamentos online</small>
@@ -37,6 +37,7 @@
         <div class="dropdown-content" role="menu">
           <a href="/negocios" role="menuitem">Negócios</a>
           <a href="/planos" role="menuitem">Planos</a>
+          <a href="/download-app" role="menuitem">Download app</a>
           <a href="#sobre" role="menuitem">A Orbyta</a>
           <a href="/cliente" role="menuitem">Meus Agendamentos</a>
           <hr class="menu-divider">
@@ -50,9 +51,6 @@
   </nav>
 
   <div class="actions">
-    <button id="install-pwa-top-btn" type="button" class="btn pwa-install-btn pwa-install-trigger" hidden>
-      ⬇ Baixar app
-    </button>
     {% if session.get("usuario") %}
       {% if session.get("tipo") == "cliente" %}
         <a href="/cliente" class="btn primary">Minha conta</a>
@@ -104,12 +102,7 @@
     {% else %}
       <a href="/cliente" class="btn outline">Ver meus agendamentos</a>
     {% endif %}
-    <button id="install-pwa-btn" type="button" class="btn pwa-install-btn pwa-install-trigger" hidden>
-      ⬇ Baixar app
-    </button>
   </div>
-
-  <p id="pwa-install-hint" class="pwa-install-hint" hidden></p>
 
   {% if session.get("usuario") %}
     <p style="opacity:.8; margin-top:14px;">
@@ -119,15 +112,15 @@
 
   <div class="hero-stat-row">
     <div class="hero-stat">
-      <strong>⚡ Agendamento rápido</strong>
+      <strong>Agendamento rápido</strong>
       <span>O cliente escolhe serviço, profissional e horário sem complicação.</span>
     </div>
     <div class="hero-stat">
-      <strong>📲 Menos WhatsApp</strong>
+      <strong>Menos WhatsApp</strong>
       <span>Menos troca manual de mensagem e mais tempo para atender bem.</span>
     </div>
     <div class="hero-stat">
-      <strong>🗓 Organização real</strong>
+      <strong>Organização da agenda</strong>
       <span>Agenda mais clara para o cliente e para o negócio.</span>
     </div>
   </div>
@@ -198,54 +191,6 @@
 <script>
   const dropdown = document.querySelector(".dropdown");
   const button = document.querySelector(".dropbtn");
-  const installPwaBtns = Array.from(document.querySelectorAll(".pwa-install-trigger"));
-  const pwaInstallHint = document.getElementById("pwa-install-hint");
-  const isIos = /iphone|ipad|ipod/i.test(window.navigator.userAgent);
-  const isStandalone = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-  const pwaInstalledKey = "orbyta_pwa_instalado";
-  let deferredInstallPrompt = null;
-
-  function marcarPwaComoInstalado() {
-    try {
-      window.localStorage.setItem(pwaInstalledKey, "1");
-    } catch (_) {
-      // Sem acesso ao localStorage, segue sem persistir.
-    }
-  }
-
-  function pwaJaFoiInstalado() {
-    if (isStandalone) return true;
-    try {
-      return window.localStorage.getItem(pwaInstalledKey) === "1";
-    } catch (_) {
-      return false;
-    }
-  }
-
-  function mostrarHintInstalacao(texto) {
-    if (!pwaInstallHint) return;
-    pwaInstallHint.textContent = texto;
-    pwaInstallHint.hidden = false;
-  }
-
-  function esconderHintInstalacao() {
-    if (!pwaInstallHint) return;
-    pwaInstallHint.hidden = true;
-    pwaInstallHint.textContent = "";
-  }
-
-  function abrirBotaoInstalacao(texto) {
-    installPwaBtns.forEach((btn) => {
-      btn.textContent = texto;
-      btn.hidden = false;
-    });
-  }
-
-  function esconderBotoesInstalacao() {
-    installPwaBtns.forEach((btn) => {
-      btn.hidden = true;
-    });
-  }
 
   if (dropdown && button) {
     button.addEventListener("click", (e) => {
@@ -259,57 +204,6 @@
       button.setAttribute("aria-expanded", "false");
     });
   }
-
-  if (pwaJaFoiInstalado()) {
-    marcarPwaComoInstalado();
-    esconderBotoesInstalacao();
-  } else if (isIos && !isStandalone) {
-    // iOS não tem beforeinstallprompt: mostra instrução manual
-    abrirBotaoInstalacao("⬇ Instalar no iPhone");
-    mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
-  }
-  // Android/Desktop: botão SEM mostrar por padrão.
-  // Só aparecerá quando beforeinstallprompt disparar
-  // (esse evento só ocorre quando o app AINDA NÃO está instalado)
-
-  window.addEventListener("beforeinstallprompt", (event) => {
-    event.preventDefault();
-    deferredInstallPrompt = event;
-    abrirBotaoInstalacao("⬇ Baixar app Orbyta");
-    esconderHintInstalacao();
-  });
-
-  installPwaBtns.forEach((installPwaBtn) => {
-    installPwaBtn.addEventListener("click", async () => {
-      if (isIos && !deferredInstallPrompt) {
-        mostrarHintInstalacao("No Safari, toque em Compartilhar e depois em Adicionar a Tela de Início.");
-        return;
-      }
-
-      if (!deferredInstallPrompt) {
-        mostrarHintInstalacao("Seu navegador não liberou a instalação automática agora. Continue navegando e tente novamente.");
-        return;
-      }
-
-      deferredInstallPrompt.prompt();
-      const escolha = await deferredInstallPrompt.userChoice;
-      deferredInstallPrompt = null;
-
-      if (escolha.outcome === "accepted") {
-        marcarPwaComoInstalado();
-        esconderBotoesInstalacao();
-        mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
-      } else {
-        mostrarHintInstalacao("Sem problemas. Você pode instalar depois por este mesmo botão.");
-      }
-    });
-  });
-
-  window.addEventListener("appinstalled", () => {
-    marcarPwaComoInstalado();
-    esconderBotoesInstalacao();
-    mostrarHintInstalacao("Aplicativo instalado com sucesso. Abra pela tela inicial.");
-  });
 </script>
 
 </body>

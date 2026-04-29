@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🪐 Meu Painel • {{ profissional.nome }}</title>
+  <title>Meu painel • {{ profissional.nome }}</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="manifest" href="/manifest.json">
@@ -204,7 +204,7 @@
               <td>
                 <strong>{{ a.cliente }}</strong>
                 {% if a.whatsapp_link %}
-                  <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">🟢</a>
+                  <a href="{{ a.whatsapp_link }}" target="_blank" rel="noopener noreferrer" title="Chamar cliente no WhatsApp" style="text-decoration:none; margin-left:6px;">WhatsApp</a>
                 {% endif %}
                 {% if a.pode_enviar_lembrete and a.lembrete_manual_link %}
                   <div style="margin-top:8px;">
