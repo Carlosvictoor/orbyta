@@ -137,7 +137,7 @@ def assinar():
         u = usuario_atual() or u
 
     plano_atual = _plano_escolhido(u)
-    planos = [obter_plano_config("solo"), obter_plano_config("pro")]
+    planos = [obter_plano_config("solo"), obter_plano_config("pro"), obter_plano_config("copiloto")]
     return render_template(
         "assinar.html",
         u=u,

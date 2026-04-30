@@ -62,6 +62,12 @@ PLANOS_CONFIG = {
         "limite_funcionarios": None,
         "descricao": "Para negócios com equipe e crescimento sem limite de funcionários.",
     },
+    "copiloto": {
+        "nome": "Orbyta Copiloto",
+        "valor": 59.99,
+        "limite_funcionarios": None,
+        "descricao": "Tudo do Pro mais notificações automáticas, lembretes e suporte prioritário.",
+    },
 }
 
 PLANO_VALOR = PLANOS_CONFIG[PLANO_PADRAO]["valor"]

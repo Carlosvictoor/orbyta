@@ -168,6 +168,54 @@
     </div>
 
     <div class="plan-card">
+      <div class="plan-badge">Premium</div>
+
+      <h2>Orbyta Copiloto</h2>
+      <p class="plan-desc">
+        Para negócios que querem automatizar a comunicação e ter suporte prioritário da Orbyta.
+      </p>
+
+      <div class="price">
+        <span class="price-currency">R$</span>
+        <span class="price-value">59,99</span>
+        <span class="price-period">/mês</span>
+      </div>
+
+      <p style="opacity:.9; margin-top:-6px;">
+        <b>7 dias grátis</b> para testar. Depois, a assinatura pode ser ativada.
+      </p>
+
+      <ul class="plan-list">
+        <li>Tudo do Orbyta Pro</li>
+        <li>Profissionais ilimitados</li>
+        <li>Notificações automáticas via WhatsApp</li>
+        <li>Lembretes de agendamento para clientes</li>
+        <li>Relatórios avançados</li>
+        <li>Suporte prioritário</li>
+      </ul>
+
+      <div class="plan-actions">
+        {% if session.get("usuario") %}
+          {% if session.get("tipo") == "dono" %}
+            <a class="btn primary" href="/assinar?plano=copiloto">Escolher Copiloto</a>
+          {% elif session.get("tipo") == "admin" %}
+            <a class="btn primary" href="/admin">Acessar admin</a>
+          {% else %}
+            <a class="btn primary" href="/quero-ser-dono">Criar meu negócio</a>
+          {% endif %}
+        {% else %}
+          <a class="btn primary" href="/login">Criar meu negócio</a>
+        {% endif %}
+
+        <a class="btn outline" href="/#sobre">Ver como funciona</a>
+      </div>
+
+      <p class="plan-note">
+        Cancelamento quando quiser. Sem fidelidade.
+      </p>
+    </div>
+
+    <div class="plan-card">
       <h2>Empresas</h2>
       <p class="plan-desc">
         Precisa de algo sob medida (mais unidades, relatórios, integrações)?

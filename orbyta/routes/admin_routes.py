@@ -48,7 +48,7 @@ def admin():
     negocios = listar_negocios()
     usuarios = listar_usuarios()
     donos = [u for u in usuarios if u.get("tipo") == "dono"]
-    planos = [obter_plano_config("solo"), obter_plano_config("pro")]
+    planos = [obter_plano_config("solo"), obter_plano_config("pro"), obter_plano_config("copiloto")]
 
     for d in donos:
         d["plano_info"] = obter_plano_config(d.get("plano_slug") or "pro")
