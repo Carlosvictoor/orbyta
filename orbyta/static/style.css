@@ -6,6 +6,7 @@
 html{
   -webkit-text-size-adjust: 100%;
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body{
@@ -14,6 +15,14 @@ body{
   background: linear-gradient(135deg,#0f0f0f,#1a1a1a);
   color: #fff;
   min-height: 100vh;
+}
+
+img,
+picture,
+video,
+canvas,
+svg{
+  max-width: 100%;
 }
 
 a{
@@ -1199,6 +1208,10 @@ font-size:16px;
   --button-padding-x:18px;
   --button-radius:14px;
   --button-font-size:15px;
+  --safe-top:env(safe-area-inset-top, 0px);
+  --safe-right:env(safe-area-inset-right, 0px);
+  --safe-bottom:env(safe-area-inset-bottom, 0px);
+  --safe-left:env(safe-area-inset-left, 0px);
 }
 
 body{
@@ -1208,6 +1221,23 @@ body{
     linear-gradient(135deg, #07111f 0%, #0d1727 40%, #0b1320 100%);
   color: var(--text-main);
   overflow-x:hidden;
+  min-height: 100dvh;
+  padding-bottom: var(--safe-bottom);
+}
+
+body.standalone-app{
+  overscroll-behavior-y: contain;
+}
+
+body.standalone-app .navbar{
+  padding-top: calc(14px + var(--safe-top));
+}
+
+body.standalone-app .container,
+body.standalone-app .page,
+body.standalone-app .dash,
+body.standalone-app .agenda-container{
+  padding-bottom: calc(16px + var(--safe-bottom));
 }
 
 .card,
@@ -1233,6 +1263,7 @@ input, select, textarea{
   background: rgba(255,255,255,.05);
   border: 1px solid rgba(255,255,255,.10);
   color: #fff;
+  font-size: 16px;
 }
 
 select{
@@ -1300,6 +1331,8 @@ button{
 .navbar{
   border-bottom: 1px solid rgba(255,255,255,.06);
   box-shadow: 0 12px 34px rgba(0,0,0,.18);
+  padding-left: max(28px, calc(18px + var(--safe-left)));
+  padding-right: max(28px, calc(18px + var(--safe-right)));
 }
 
 .logo{
@@ -1429,6 +1462,32 @@ button{
   font-weight:700;
 }
 
+.agenda-layout{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(320px, 1fr));
+  gap:18px;
+  align-items:start;
+}
+
+.agenda-service-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(210px, 1fr));
+  gap:12px;
+  margin-bottom:14px;
+}
+
+.agenda-profissionais-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+  gap:16px;
+}
+
+.agenda-summary{
+  position:sticky;
+  top:110px;
+  align-self:start;
+}
+
 .search-card{
   margin-bottom:18px;
 }
@@ -1529,6 +1588,23 @@ button{
 
 .calendar-bar button{
   min-width:42px;
+  min-height:42px;
+}
+
+.calendar-bar{
+  flex-wrap:wrap;
+}
+
+.calendar-days{
+  scrollbar-width:thin;
+  padding-bottom:4px;
+  scroll-snap-type:x proximity;
+}
+
+.day{
+  min-width:78px;
+  flex:0 0 auto;
+  scroll-snap-align:start;
 }
 
 .services-accordion{
@@ -1652,6 +1728,8 @@ button{
 @media (max-width: 768px){
   .navbar{
     padding:12px 14px;
+    padding-left:max(14px, calc(12px + var(--safe-left)));
+    padding-right:max(14px, calc(12px + var(--safe-right)));
     gap:10px;
   }
 
@@ -1700,8 +1778,8 @@ button{
   .dash,
   .agenda-container{
     margin-top:180px !important;
-    padding-left:12px;
-    padding-right:12px;
+    padding-left:max(12px, calc(12px + var(--safe-left)));
+    padding-right:max(12px, calc(12px + var(--safe-right)));
   }
 
   .table{
@@ -1716,8 +1794,24 @@ button{
   .feature-grid,
   .summary-row,
   .hero-stat-row,
-  .profissionais-grid{
+  .profissionais-grid,
+  .agenda-layout,
+  .agenda-service-grid,
+  .agenda-profissionais-grid{
     grid-template-columns:1fr;
+  }
+
+  .agenda-summary{
+    position:static;
+    top:auto;
+  }
+
+  .calendar-days{
+    width:100%;
+  }
+
+  .calendar-bar button{
+    flex:0 0 44px;
   }
 
   .home-navbar .main-menu-wrap{
@@ -1763,6 +1857,22 @@ button{
   .link-btn{
     width:100%;
   }
+
+  .auth-pill,
+  .chip{
+    width:100%;
+    justify-content:center;
+  }
+
+  .agenda-top .btn-outline,
+  .agenda-top .btn{
+    width:100%;
+  }
+
+  .agenda-profissionais-grid .profissional{
+    max-width:none !important;
+  }
+
   .pwa-install-hint{
     font-size: 13px;
     text-align: left;

@@ -116,7 +116,7 @@ def painel():
         return redirect("/login")
 
     if not exigir_assinatura_dono():
-        flash("Seu teste terminou ou sua assinatura não está ativa. Assine para continuar ✅")
+        flash("Seu teste terminou ou sua assinatura não está ativa. Assine para continuar.")
         return redirect("/assinar")
 
     negocio_id = session.get("negocio_id")
@@ -299,7 +299,7 @@ def painel_agendar_manual():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -374,7 +374,7 @@ def painel_agendar_manual():
     })
     salvar_json(AGENDAMENTOS_FILE, ag)
 
-    flash(f"Agendamento manual salvo ✅ {nome} • {profissional.get('nome')} • {data} às {horario}")
+    flash(f"Agendamento manual salvo para {nome} com {profissional.get('nome')} em {data} às {horario}.")
     return redirect("/painel")
 
 
@@ -385,7 +385,7 @@ def painel_agendamento_excluir(ag_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -401,7 +401,7 @@ def painel_agendamento_excluir(ag_id):
         novo.append(item)
 
     salvar_json(AGENDAMENTOS_FILE, novo)
-    flash("Agendamento excluído ✅" if removido else "Agendamento não encontrado.")
+    flash("Agendamento excluído com sucesso." if removido else "Agendamento não encontrado.")
     return redirect("/painel")
 
 
@@ -412,7 +412,7 @@ def painel_agendamento_cancelar(ag_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -428,7 +428,7 @@ def painel_agendamento_cancelar(ag_id):
             break
 
     salvar_json(AGENDAMENTOS_FILE, ag)
-    flash("Cliente marcado como cancelado ✅" if ok else "Agendamento não encontrado.")
+    flash("Cliente marcado como cancelado." if ok else "Agendamento não encontrado.")
     return redirect("/painel")
 
 
@@ -439,7 +439,7 @@ def painel_ranking_zerar():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -452,7 +452,7 @@ def painel_ranking_zerar():
         "reset_em": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
     salvar_json(RANKING_RESET_FILE, resets)
-    flash("Ranking do mês zerado ✅")
+    flash("Ranking do mês zerado com sucesso.")
     return redirect("/painel")
 
 
@@ -463,7 +463,7 @@ def painel_config_whatsapp():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -490,7 +490,7 @@ def painel_config_whatsapp():
         },
     )
 
-    flash("Configuração do WhatsApp salva ✅")
+    flash("Configuração do WhatsApp salva com sucesso.")
     return redirect("/painel")
 
 
@@ -501,7 +501,7 @@ def painel_whatsapp_teste():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -541,7 +541,7 @@ def painel_whatsapp_teste():
             return redirect("/painel")
 
         mensagem = (
-            f"Teste do WhatsApp da {negocio.get('nome', 'Orbyta')} ✅\n"
+            f"Teste do WhatsApp da {negocio.get('nome', 'Orbyta')}\n"
             f"Se você recebeu esta mensagem, a configuração principal está pronta para produção."
         )
 
@@ -549,13 +549,13 @@ def painel_whatsapp_teste():
     if whatsapp_provider in {"", "none"}:
         link_manual = gerar_link_whatsapp(numero_destino, mensagem)
         if link_manual:
-            flash("Abrindo WhatsApp Web com a mensagem de teste pronta ✅")
+            flash("Abrindo o WhatsApp Web com a mensagem de teste pronta.")
             return redirect(link_manual)
         flash("Não foi possível montar o link manual do WhatsApp.")
         return redirect("/painel")
 
     ok, detalhe = send_whatsapp_message(numero_destino, mensagem, negocio=negocio)
-    flash("Mensagem de teste enviada ✅" if ok else f"Falha no teste do WhatsApp: {detalhe}")
+    flash("Mensagem de teste enviada com sucesso." if ok else f"Falha no teste do WhatsApp: {detalhe}")
     return redirect("/painel")
 
 
@@ -566,7 +566,7 @@ def painel_personalizar():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -602,7 +602,7 @@ def painel_personalizar():
         patch["foto"] = foto_url
 
     atualizar_negocio(negocio_id, patch)
-    flash("Página da loja atualizada ✅")
+    flash("Página da loja atualizada com sucesso.")
     return redirect("/painel")
 
 
@@ -613,7 +613,7 @@ def painel_financeiro():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -676,7 +676,7 @@ def painel_financeiro():
 
         salvar_lancamento_financeiro(item)
 
-        flash(f"Lançamento salvo ✅ {categoria} • R$ {round(v, 2):.2f}")
+        flash(f"Lançamento salvo com sucesso. {categoria}: R$ {round(v, 2):.2f}.")
         return redirect(f"/painel/financeiro?mes={mes}")
 
     itens = financeiro_do_negocio(negocio_id)
@@ -785,14 +785,14 @@ def painel_financeiro_excluir(lanc_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
     mes = request.args.get("mes", datetime.now().strftime("%Y-%m"))
 
     ok = remover_lancamento_financeiro(negocio_id, lanc_id)
-    flash("Lançamento excluído ✅" if ok else "Não encontrado / item automático não pode ser excluído.")
+    flash("Lançamento excluído com sucesso." if ok else "Não encontrado ou item automático não pode ser excluído.")
     return redirect(f"/painel/financeiro?mes={mes}")
 
 
@@ -803,7 +803,7 @@ def painel_servicos():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id"))
@@ -828,7 +828,7 @@ def painel_servicos_novo():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id"))
@@ -891,7 +891,7 @@ def painel_servicos_novo():
     })
 
     salvar_servicos(servs)
-    flash("Serviço cadastrado ✅")
+    flash("Serviço cadastrado com sucesso.")
     return redirect("/painel/servicos")
 
 
@@ -902,7 +902,7 @@ def painel_servicos_editar():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -977,7 +977,7 @@ def painel_servicos_editar():
             break
 
     salvar_servicos(servs)
-    flash("Serviço atualizado ✅" if ok else "Serviço não encontrado.")
+    flash("Serviço atualizado com sucesso." if ok else "Serviço não encontrado.")
     return redirect("/painel/servicos")
 
 
@@ -988,7 +988,7 @@ def painel_servicos_desativar(serv_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id"))
@@ -999,7 +999,7 @@ def painel_servicos_desativar(serv_id):
             s["ativo"] = False
 
     salvar_servicos(servs)
-    flash("Serviço desativado ✅")
+    flash("Serviço desativado com sucesso.")
     return redirect("/painel/servicos")
 
 
@@ -1010,7 +1010,7 @@ def painel_horarios():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id"))
@@ -1020,7 +1020,7 @@ def painel_horarios():
         selecionados = request.form.getlist("times")
         selecionados = [t for t in selecionados if t in SLOTS_PADRAO_30]
         salvar_horarios_globais(negocio_id, selecionados)
-        flash("Horários salvos para TODOS OS DIAS ✅")
+        flash("Horários salvos para todos os dias.")
         return redirect("/painel/horarios")
 
     selecionados = set(obter_horarios_globais(negocio_id))
@@ -1035,7 +1035,7 @@ def painel_profissionais():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = session.get("negocio_id")
@@ -1086,7 +1086,7 @@ def painel_profissionais_novo():
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = session.get("negocio_id")
@@ -1103,7 +1103,7 @@ def painel_profissionais_novo():
 
     if request.method == "POST":
         if not pode_adicionar_mais_funcionarios(u, len(profs_existentes)):
-            flash(f"O plano {plano_info['nome']} permite apenas {limite_funcionarios} funcionário cadastrado. Faça upgrade para continuar ✅")
+            flash(f"O plano {plano_info['nome']} permite apenas {limite_funcionarios} funcionário cadastrado. Faça upgrade para continuar.")
             return redirect("/painel/profissionais")
         nome = request.form["nome"].strip()
         categoria = request.form.get("categoria", "").strip().lower()
@@ -1144,7 +1144,7 @@ def painel_profissionais_novo():
         })
 
         salvar_profissionais(profs)
-        flash("Profissional cadastrado com sucesso! ✅")
+        flash("Profissional cadastrado com sucesso.")
         return redirect("/painel/profissionais")
 
     return render_template(
@@ -1165,7 +1165,7 @@ def atualizar_perfil_profissional(prof_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -1197,7 +1197,7 @@ def atualizar_perfil_profissional(prof_id):
             break
 
     salvar_profissionais(profs)
-    flash("Perfil do profissional atualizado ✅" if ok else "Profissional não encontrado.")
+    flash("Perfil do profissional atualizado com sucesso." if ok else "Profissional não encontrado.")
     return redirect("/painel/profissionais")
 
 
@@ -1208,7 +1208,7 @@ def atualizar_areas_profissional(prof_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -1223,7 +1223,7 @@ def atualizar_areas_profissional(prof_id):
             break
 
     salvar_profissionais(profs)
-    flash("Áreas de atendimento atualizadas ✅" if ok else "Profissional não encontrado.")
+    flash("Áreas de atendimento atualizadas com sucesso." if ok else "Profissional não encontrado.")
     return redirect("/painel/profissionais")
 
 
@@ -1234,7 +1234,7 @@ def atualizar_comissao_profissional(prof_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -1249,7 +1249,7 @@ def atualizar_comissao_profissional(prof_id):
             break
 
     salvar_profissionais(profs)
-    flash("Comissão atualizada ✅" if ok else "Profissional não encontrado.")
+    flash("Comissão atualizada com sucesso." if ok else "Profissional não encontrado.")
     return redirect("/painel/profissionais")
 
 
@@ -1260,7 +1260,7 @@ def criar_acesso_profissional(prof_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -1303,7 +1303,7 @@ def criar_acesso_profissional(prof_id):
     if not pode_adicionar_mais_funcionarios(u, len(funcionarios_do_negocio)):
         plano_info = plano_do_dono(u)
         limite = limite_funcionarios_do_plano(u)
-        flash(f"O plano {plano_info['nome']} permite apenas {limite} funcionário com acesso. Faça upgrade para liberar mais ✅")
+        flash(f"O plano {plano_info['nome']} permite apenas {limite} funcionário com acesso. Faça upgrade para liberar mais acessos.")
         return redirect("/painel/profissionais")
 
     usuarios.append({
@@ -1319,7 +1319,7 @@ def criar_acesso_profissional(prof_id):
     })
 
     salvar_json(USUARIOS_FILE, usuarios)
-    flash("Conta do funcionário criada ✅")
+    flash("Conta do funcionário criada com sucesso.")
     return redirect("/painel/profissionais")
 
 
@@ -1330,7 +1330,7 @@ def excluir_acesso_profissional(prof_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = int(session.get("negocio_id") or 0)
@@ -1349,7 +1349,7 @@ def excluir_acesso_profissional(prof_id):
         novo.append(usr)
 
     salvar_json(USUARIOS_FILE, novo)
-    flash("Acesso do funcionário removido ✅" if removido else "Acesso não encontrado.")
+    flash("Acesso do funcionário removido com sucesso." if removido else "Acesso não encontrado.")
     return redirect("/painel/profissionais")
 
 
@@ -1360,7 +1360,7 @@ def painel_profissionais_excluir(prof_id):
 
     u = usuario_atual()
     if not u or not exigir_assinatura_dono():
-        flash("Assine para acessar esta área ✅")
+        flash("Assine para acessar esta área.")
         return redirect("/assinar")
 
     negocio_id = session.get("negocio_id")
@@ -1389,5 +1389,5 @@ def painel_profissionais_excluir(prof_id):
         novo.append(p)
 
     salvar_profissionais(novo)
-    flash("Profissional excluído ✅" if removido else "Profissional não encontrado.")
+    flash("Profissional excluído com sucesso." if removido else "Profissional não encontrado.")
     return redirect("/painel/profissionais")

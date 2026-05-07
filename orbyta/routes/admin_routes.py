@@ -87,7 +87,7 @@ def admin_criar_negocio():
     })
 
     salvar_negocios(negocios)
-    flash(f"Negócio criado com sucesso! ✅ (ID {novo_id})")
+    flash(f"Negócio criado com sucesso. ID {novo_id}.")
     return redirect("/admin")
 
 
@@ -138,7 +138,7 @@ def admin_criar_dono():
     })
 
     salvar_usuarios(usuarios)
-    flash(f"Dono criado no plano {plano_inicial['nome']} com 7 dias grátis ✅")
+    flash(f"Dono criado no plano {plano_inicial['nome']} com 7 dias de teste.")
     return redirect("/admin")
 
 
@@ -163,7 +163,7 @@ def admin_atualizar_plano_dono(email):
             break
 
     salvar_usuarios(usuarios)
-    flash(f"Plano atualizado para {plano['nome']} ✅" if ok else "Dono não encontrado.")
+    flash(f"Plano atualizado para {plano['nome']}." if ok else "Dono não encontrado.")
     return redirect("/admin")
 
 
@@ -188,7 +188,7 @@ def admin_excluir_dono(email):
     usuarios = [u for u in usuarios if u.get("email", "").lower() != email]
     salvar_usuarios(usuarios)
 
-    flash("Dono excluído ✅")
+    flash("Dono excluído com sucesso.")
     return redirect("/admin")
 
 
@@ -249,5 +249,5 @@ def admin_excluir_negocio(negocio_id):
 
     salvar_usuarios(novo_usuarios)
 
-    flash(f"Negócio {negocio_id} excluído ✅ (dados vinculados limpos)")
+    flash(f"Negócio {negocio_id} excluído com sucesso. Os dados vinculados foram limpos.")
     return redirect("/admin")

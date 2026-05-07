@@ -2,15 +2,15 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Agendar • {{ negocio.nome }}</title>
   <link rel="icon" type="image/png" href="/static/favicon.png">
   <link rel="apple-touch-icon" href="/static/icon-192.png">
   <link rel="manifest" href="/manifest.json">
-  <meta name="theme-color" content="#f97316">
+  <meta name="theme-color" content="#0d1727">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Orbyta">
   <script defer src="/static/pwa-register.js"></script>
   <link rel="stylesheet" href="/static/style.css">
@@ -71,13 +71,13 @@
       <span class="chip" id="chipHorario">4. Horário</span>
     </div>
 
-    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(320px, 1fr)); gap:18px; align-items:start;">
+    <div class="agenda-layout">
       <div>
         <div class="agenda-step" id="stepServico">
           <h3>Mais agendados</h3>
           <p class="step-note">Escolha rapidamente um dos serviços mais pedidos ou use a lista completa logo abaixo.</p>
 
-          <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(210px, 1fr)); gap:12px; margin-bottom:14px;">
+          <div class="agenda-service-grid">
             {% for s in servs[:4] %}
               <button
                 type="button"
@@ -144,7 +144,7 @@
           <h3>Nossa equipe</h3>
           <p class="step-note">Depois do serviço, o cliente escolhe com quem deseja ser atendido.</p>
 
-          <div class="profissionais-grid" style="display:flex; flex-wrap:wrap; gap:16px;">
+          <div class="profissionais-grid agenda-profissionais-grid">
             {% for p in profs %}
               <div
                 class="profissional"
@@ -247,7 +247,7 @@
         </div>
       </div>
 
-      <aside class="biz-card" style="position:sticky; top:110px; align-self:start;">
+      <aside class="biz-card agenda-summary">
         <h3 style="margin-top:0;">Resumo do agendamento</h3>
         <p class="step-note">Esse bloco deixa a experiência mais parecida com plataformas como a referência, sem trocar o visual do seu site.</p>
 

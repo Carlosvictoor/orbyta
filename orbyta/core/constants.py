@@ -52,13 +52,13 @@ PLANO_PADRAO = "pro"
 PLANOS_CONFIG = {
     "solo": {
         "nome": "Orbyta Solo",
-        "valor": 14.99,
+        "valor": 9.99,
         "limite_funcionarios": 1,
         "descricao": "Perfeito para autônomos e pequenos negócios com até 1 funcionário.",
     },
     "pro": {
         "nome": "Orbyta Pro",
-        "valor": 29.99,
+        "valor": 14.99,
         "limite_funcionarios": None,
         "descricao": "Para negócios com equipe e crescimento sem limite de funcionários.",
     },

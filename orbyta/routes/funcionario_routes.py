@@ -250,7 +250,7 @@ def painel_funcionario_agendar_manual():
     })
     salvar_json(AGENDAMENTOS_FILE, ag)
 
-    flash(f"Agendamento manual salvo ✅ {nome} • {data} às {horario}")
+    flash(f"Agendamento manual salvo para {nome} em {data} às {horario}.")
     return redirect(f"/painel-funcionario?mes={mes}")
 
 
@@ -298,5 +298,5 @@ def painel_funcionario_perfil():
             break
 
     salvar_profissionais(profs)
-    flash("Seu perfil foi atualizado ✅" if ok else "Não foi possível atualizar seu perfil.")
+    flash("Seu perfil foi atualizado com sucesso." if ok else "Não foi possível atualizar seu perfil.")
     return redirect(f"/painel-funcionario?mes={mes}")

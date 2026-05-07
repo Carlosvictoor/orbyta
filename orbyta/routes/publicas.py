@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, current_app, make_response
+from core.constants import obter_plano_config
 from services.negocios_service import listar_negocios, get_negocio
 from services.servicos_service import servicos_do_negocio, agrupar_servicos_por_categoria
 from services.profissionais_service import profissionais_do_negocio
@@ -27,6 +28,9 @@ def web_manifest():
         current_app.send_static_file("manifest.json")
     )
     response.headers["Content-Type"] = "application/manifest+json"
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    response.headers["Pragma"] = "no-cache"
+    response.headers["Expires"] = "0"
     return response
 
 
@@ -47,7 +51,11 @@ def download_app():
 
 @publicas_bp.route("/planos")
 def planos():
-    return render_template("planos.html")
+    return render_template(
+        "planos.html",
+        plano_solo=obter_plano_config("solo"),
+        plano_pro=obter_plano_config("pro"),
+    )
 
 
 @publicas_bp.route("/negocios")

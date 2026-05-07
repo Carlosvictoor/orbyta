@@ -1,14 +1,18 @@
 {
+  "id": "/",
   "name": "Orbyta • Agendamentos",
   "short_name": "Orbyta",
   "description": "Agendamentos online para salões, barbearias e clínicas de estética.",
-  "start_url": "/",
+  "start_url": "/?source=pwa",
   "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui", "browser"],
   "orientation": "any",
-  "background_color": "#ffffff",
-  "theme_color": "#f97316",
+  "background_color": "#07111f",
+  "theme_color": "#0d1727",
   "lang": "pt-BR",
+  "categories": ["beauty", "business", "productivity", "lifestyle"],
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/static/icon-192.png",

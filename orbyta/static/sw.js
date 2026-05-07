@@ -7,13 +7,14 @@
    - Resto: stale-while-revalidate
    ============================================================= */
 
-const CACHE_VERSION = 'v3';
+const CACHE_VERSION = 'v4';
 const CACHE_NAME = `orbyta-${CACHE_VERSION}`;
 
 const PRECACHE_URLS = [
   '/',
   '/offline',
   '/manifest.json',
+  '/download-app',
   '/static/style.css',
   '/static/favicon.png',
   '/static/icon-192.png',
@@ -34,15 +35,26 @@ self.addEventListener('install', event => {
 // ── Activate: remove caches antigos ─────────────────────────
 self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
+    (async () => {
+      if ('navigationPreload' in self.registration) {
+        await self.registration.navigationPreload.enable();
+      }
+
+      const keys = await caches.keys();
+      await Promise.all(
         keys
           .filter(k => k.startsWith('orbyta-') && k !== CACHE_NAME)
           .map(k => caches.delete(k))
-      )
-    )
+      );
+    })()
   );
   self.clients.claim();
+});
+
+self.addEventListener('message', event => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
 });
 
 // ── Fetch ────────────────────────────────────────────────────
@@ -56,15 +68,21 @@ self.addEventListener('fetch', event => {
   // API: network-only (dados sempre frescos)
   if (url.pathname.startsWith('/api/')) return;
 
-  // Arquivos estáticos e manifest: stale-while-revalidate
-  if (url.pathname.startsWith('/static/') || url.pathname === '/manifest.json') {
+  // Manifest: network-first para refletir atualizações sem reinstalar o app
+  if (url.pathname === '/manifest.json') {
+    event.respondWith(networkFirst(request));
+    return;
+  }
+
+  // Arquivos estáticos: stale-while-revalidate
+  if (url.pathname.startsWith('/static/')) {
     event.respondWith(staleWhileRevalidate(request));
     return;
   }
 
   // Navegação HTML: network-first com fallback offline
   if (request.mode === 'navigate') {
-    event.respondWith(networkFirstWithOfflineFallback(request));
+    event.respondWith(networkFirstWithOfflineFallback(event));
     return;
   }
 
@@ -74,8 +92,16 @@ self.addEventListener('fetch', event => {
 
 // ── Estratégias ──────────────────────────────────────────────
 
-async function networkFirstWithOfflineFallback(request) {
+async function networkFirstWithOfflineFallback(event) {
+  const { request } = event;
   try {
+    const preloadResponse = await event.preloadResponse;
+    if (preloadResponse) {
+      const cache = await caches.open(CACHE_NAME);
+      cache.put(request, preloadResponse.clone());
+      return preloadResponse;
+    }
+
     const response = await fetch(request);
     // Salva navegações bem-sucedidas no cache
     if (response.ok) {
@@ -93,9 +119,26 @@ async function networkFirstWithOfflineFallback(request) {
 async function staleWhileRevalidate(request) {
   const cache = await caches.open(CACHE_NAME);
   const cached = await cache.match(request);
-  const fetchPromise = fetch(request).then(response => {
-    if (response.ok) cache.put(request, response.clone());
-    return response;
-  });
+  const fetchPromise = fetch(request)
+    .then(response => {
+      if (response.ok) cache.put(request, response.clone());
+      return response;
+    })
+    .catch(() => cached);
   return cached || fetchPromise;
+}
+
+async function networkFirst(request) {
+  const cache = await caches.open(CACHE_NAME);
+  try {
+    const response = await fetch(request, { cache: 'no-store' });
+    if (response.ok) {
+      cache.put(request, response.clone());
+    }
+    return response;
+  } catch {
+    const cached = await cache.match(request);
+    if (cached) return cached;
+    throw new Error('network-first failed');
+  }
 }
